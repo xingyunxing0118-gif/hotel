@@ -1,0 +1,1938 @@
+<!DOCTYPE html><html lang="zh-TW"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>尊爵套房 互動導覽 — 語音版</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #0a0a0a;
+            font-family: 'Microsoft JhengHei', 'PingFang TC', sans-serif;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* ===== 頂部標題列 ===== */
+        .top-bar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            background: linear-gradient(180deg, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0) 100%);
+            padding: 20px 30px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+        }
+
+        .hotel-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .hotel-logo {
+            width: 45px;
+            height: 45px;
+            background: linear-gradient(135deg, #c9a84c, #f0d78c, #c9a84c);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: #1a1a1a;
+            font-weight: bold;
+            box-shadow: 0 2px 15px rgba(201,168,76,0.4);
+        }
+
+        .hotel-info h1 {
+            color: #f0d78c;
+            font-size: 18px;
+            font-weight: 600;
+            letter-spacing: 3px;
+        }
+
+        .hotel-info p {
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            letter-spacing: 5px;
+            margin-top: 2px;
+        }
+
+        .room-badge {
+            background: linear-gradient(135deg, #c9a84c, #dbb960);
+            color: #1a1a1a;
+            padding: 8px 20px;
+            border-radius: 25px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            box-shadow: 0 2px 15px rgba(201,168,76,0.3);
+        }
+
+        /* ===== 場景切換按鈕 ===== */
+        .scene-switcher {
+            position: fixed;
+            top: 80px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 100;
+            display: flex;
+            gap: 8px;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 6px;
+            border-radius: 30px;
+            border: 1px solid rgba(201,168,76,0.3);
+        }
+
+        .scene-btn {
+            padding: 8px 24px;
+            border: none;
+            border-radius: 25px;
+            background: transparent;
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            font-family: inherit;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            letter-spacing: 1px;
+        }
+
+        .scene-btn.active {
+            background: linear-gradient(135deg, #c9a84c, #dbb960);
+            color: #1a1a1a;
+            font-weight: 600;
+            box-shadow: 0 2px 15px rgba(201,168,76,0.4);
+        }
+
+        .scene-btn:hover:not(.active) {
+            color: #f0d78c;
+            background: rgba(201,168,76,0.15);
+        }
+
+        /* ===== 主要檢視區域 ===== */
+        .viewer-container {
+            position: relative;
+            width: 90vw;
+            max-width: 1100px;
+            aspect-ratio: 1 / 1;
+            max-height: 80vh;
+            border-radius: 50%;
+            overflow: hidden;
+            box-shadow: 
+                0 0 0 3px rgba(201,168,76,0.3),
+                0 0 60px rgba(201,168,76,0.15),
+                0 20px 60px rgba(0,0,0,0.5);
+            animation: viewer-enter 1.2s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        @keyframes viewer-enter {
+            from { opacity: 0; transform: scale(0.9); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .scene {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            opacity: 0;
+            transition: opacity 0.8s ease;
+            pointer-events: none;
+        }
+
+        .scene.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .scene img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        /* ===== 熱點標記 ===== */
+        .hotspot {
+            position: absolute;
+            transform: translate(-50%, -50%);
+            z-index: 10;
+            cursor: pointer;
+            animation: hotspot-enter 0.6s cubic-bezier(0.16, 1, 0.3, 1) both;
+        }
+
+        .hotspot-ring {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .hotspot-ring::before {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            border: 2px solid var(--dot-color, #c9a84c);
+            opacity: 0.5;
+            animation: hotspot-ping 2s ease-out infinite;
+        }
+
+        .hotspot-ring::after {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            border-radius: 50%;
+            border: 1.5px solid var(--dot-color, #c9a84c);
+            opacity: 0.25;
+            animation: hotspot-ping 2s ease-out infinite 0.5s;
+        }
+
+        @keyframes hotspot-ping {
+            0% { transform: scale(1); opacity: 0.5; }
+            100% { transform: scale(1.8); opacity: 0; }
+        }
+
+        .hotspot-dot {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: radial-gradient(circle at 35% 35%, rgba(255,255,255,0.25), transparent 60%),
+                        linear-gradient(135deg, var(--dot-color, #c9a84c), var(--dot-color-dark, #a07830));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            box-shadow: 0 3px 15px rgba(0,0,0,0.4);
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .hotspot:hover .hotspot-dot {
+            transform: scale(1.2);
+            box-shadow: 0 4px 25px rgba(0,0,0,0.5);
+        }
+
+        .hotspot-label {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 50%;
+            transform: translateX(-50%);
+            white-space: nowrap;
+            background: rgba(0,0,0,0.75);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            color: #f0d78c;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 1px;
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+            border: 1px solid rgba(201,168,76,0.3);
+        }
+
+        .hotspot:hover .hotspot-label {
+            opacity: 1;
+            top: calc(100% + 10px);
+        }
+
+        /* ===== 資訊面板 ===== */
+        .info-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s ease;
+        }
+
+        .info-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .info-backdrop {
+            position: absolute;
+            inset: 0;
+            background: rgba(0,0,0,0.7);
+            backdrop-filter: blur(8px);
+            -webkit-backdrop-filter: blur(8px);
+        }
+
+        .info-panel {
+            position: relative;
+            width: 90%;
+            max-width: 520px;
+            max-height: 88vh;
+            overflow-y: auto;
+            background: linear-gradient(160deg, #1e1e1e 0%, #141414 100%);
+            border-radius: 24px;
+            padding: 0;
+            overflow-x: hidden;
+            border: 1px solid rgba(201,168,76,0.2);
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+            transform: translateY(30px) scale(0.95);
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .info-overlay.show .info-panel {
+            transform: translateY(0) scale(1);
+        }
+
+        .info-header {
+            padding: 28px 28px 20px;
+            background: linear-gradient(135deg, rgba(201,168,76,0.12), transparent);
+            border-bottom: 1px solid rgba(201,168,76,0.15);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .info-icon-box {
+            width: 56px;
+            height: 56px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .info-title {
+            color: #f0d78c;
+            font-size: 20px;
+            font-weight: 700;
+            letter-spacing: 1px;
+        }
+
+        .info-subtitle {
+            color: rgba(255,255,255,0.4);
+            font-size: 11px;
+            letter-spacing: 2px;
+            margin-top: 4px;
+            text-transform: uppercase;
+        }
+
+        .info-body {
+            padding: 24px 28px;
+        }
+
+        .info-description {
+            color: rgba(255,255,255,0.8);
+            font-size: 15px;
+            line-height: 1.8;
+            letter-spacing: 0.5px;
+        }
+
+        .info-features {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 18px;
+        }
+
+        .info-tag {
+            padding: 6px 14px;
+            background: rgba(201,168,76,0.1);
+            border: 1px solid rgba(201,168,76,0.2);
+            border-radius: 20px;
+            color: #dbb960;
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        /* ===== 語音播放區塊 ===== */
+        .audio-section {
+            margin-top: 22px;
+            padding: 18px;
+            background: linear-gradient(135deg, rgba(201,168,76,0.08), rgba(201,168,76,0.03));
+            border: 1px solid rgba(201,168,76,0.15);
+            border-radius: 16px;
+        }
+
+        .audio-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .audio-header-icon {
+            font-size: 16px;
+        }
+
+        .audio-header-text {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .audio-header-lang {
+            margin-left: auto;
+            padding: 3px 10px;
+            background: rgba(201,168,76,0.15);
+            border-radius: 10px;
+            color: #dbb960;
+            font-size: 10px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        .audio-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .audio-play-btn {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            border: 2px solid rgba(201,168,76,0.4);
+            background: linear-gradient(135deg, rgba(201,168,76,0.2), rgba(201,168,76,0.08));
+            color: #f0d78c;
+            font-size: 22px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .audio-play-btn:hover {
+            background: linear-gradient(135deg, rgba(201,168,76,0.35), rgba(201,168,76,0.15));
+            border-color: rgba(201,168,76,0.7);
+            transform: scale(1.08);
+            box-shadow: 0 4px 20px rgba(201,168,76,0.25);
+        }
+
+        .audio-play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .audio-play-btn.playing {
+            border-color: #4ECDC4;
+            background: linear-gradient(135deg, rgba(78,205,196,0.25), rgba(78,205,196,0.08));
+            animation: playing-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes playing-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(78,205,196,0.3); }
+            50% { box-shadow: 0 0 0 10px rgba(78,205,196,0); }
+        }
+
+        .audio-play-btn .play-icon,
+        .audio-play-btn .pause-icon,
+        .audio-play-btn .loading-icon {
+            position: absolute;
+            transition: all 0.3s ease;
+        }
+
+        .audio-play-btn .pause-icon {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        .audio-play-btn .loading-icon {
+            opacity: 0;
+            transform: scale(0.5);
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: scale(1) rotate(360deg); }
+        }
+
+        .audio-play-btn.playing .play-icon {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        .audio-play-btn.playing .pause-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .audio-play-btn.loading .play-icon,
+        .audio-play-btn.loading .pause-icon {
+            opacity: 0;
+            transform: scale(0.5);
+        }
+
+        .audio-play-btn.loading .loading-icon {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .audio-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .audio-title-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .audio-name {
+            color: rgba(255,255,255,0.8);
+            font-size: 14px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        .audio-status {
+            font-size: 11px;
+            color: rgba(255,255,255,0.4);
+            letter-spacing: 0.5px;
+        }
+
+        .audio-status.is-playing {
+            color: #4ECDC4;
+        }
+
+        /* 進度條 */
+        .audio-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 6px;
+        }
+
+        .audio-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #c9a84c, #4ECDC4);
+            border-radius: 4px;
+            transition: width 0.3s linear;
+        }
+
+        .audio-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: rgba(255,255,255,0.3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 音量波動動畫 */
+        .audio-wave {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 18px;
+            margin-left: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .audio-wave.active {
+            opacity: 1;
+        }
+
+        .audio-wave-bar {
+            width: 3px;
+            border-radius: 2px;
+            background: #4ECDC4;
+            animation: wave-bar 0.8s ease-in-out infinite;
+        }
+
+        .audio-wave-bar:nth-child(1) { height: 6px; animation-delay: 0s; }
+        .audio-wave-bar:nth-child(2) { height: 12px; animation-delay: 0.15s; }
+        .audio-wave-bar:nth-child(3) { height: 8px; animation-delay: 0.3s; }
+        .audio-wave-bar:nth-child(4) { height: 16px; animation-delay: 0.45s; }
+        .audio-wave-bar:nth-child(5) { height: 10px; animation-delay: 0.6s; }
+
+        @keyframes wave-bar {
+            0%, 100% { transform: scaleY(0.4); opacity: 0.5; }
+            50% { transform: scaleY(1); opacity: 1; }
+        }
+
+        /* 語音速度控制 */
+        .audio-speed-row {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
+        .speed-label {
+            color: rgba(255,255,255,0.35);
+            font-size: 11px;
+            letter-spacing: 0.5px;
+            flex-shrink: 0;
+        }
+
+        .speed-btn {
+            padding: 4px 12px;
+            border: 1px solid rgba(255,255,255,0.12);
+            border-radius: 12px;
+            background: transparent;
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .speed-btn.active {
+            border-color: rgba(201,168,76,0.5);
+            background: rgba(201,168,76,0.12);
+            color: #f0d78c;
+            font-weight: 600;
+        }
+
+        .speed-btn:hover:not(.active) {
+            border-color: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.7);
+        }
+
+        /* ===== 學生上傳語音區塊 ===== */
+        .upload-section {
+            margin-top: 16px;
+            padding: 18px;
+            background: linear-gradient(135deg, rgba(108,92,231,0.08), rgba(108,92,231,0.03));
+            border: 1px solid rgba(108,92,231,0.2);
+            border-radius: 16px;
+        }
+
+        .upload-header {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+
+        .upload-header-icon {
+            font-size: 16px;
+        }
+
+        .upload-header-text {
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .upload-header-badge {
+            margin-left: auto;
+            padding: 3px 10px;
+            background: rgba(108,92,231,0.2);
+            border-radius: 10px;
+            color: #a78bfa;
+            font-size: 10px;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* 拖曳上傳區 */
+        .upload-dropzone {
+            border: 2px dashed rgba(108,92,231,0.3);
+            border-radius: 12px;
+            padding: 24px 16px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: rgba(108,92,231,0.04);
+        }
+
+        .upload-dropzone:hover {
+            border-color: rgba(108,92,231,0.6);
+            background: rgba(108,92,231,0.08);
+        }
+
+        .upload-dropzone.dragover {
+            border-color: #a78bfa;
+            background: rgba(108,92,231,0.15);
+            transform: scale(1.01);
+        }
+
+        .upload-dropzone-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .upload-dropzone-text {
+            color: rgba(255,255,255,0.5);
+            font-size: 13px;
+            line-height: 1.6;
+        }
+
+        .upload-dropzone-text strong {
+            color: #a78bfa;
+            font-weight: 600;
+        }
+
+        .upload-dropzone-hint {
+            color: rgba(255,255,255,0.3);
+            font-size: 11px;
+            margin-top: 6px;
+        }
+
+        .upload-file-input {
+            display: none;
+        }
+
+        /* 已上傳的播放器 */
+        .uploaded-player {
+            display: none;
+        }
+
+        .uploaded-player.show {
+            display: block;
+        }
+
+        .uploaded-player-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .uploaded-file-icon {
+            width: 38px;
+            height: 38px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(108,92,231,0.25), rgba(108,92,231,0.1));
+            border: 1px solid rgba(108,92,231,0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .uploaded-file-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .uploaded-file-name {
+            color: rgba(255,255,255,0.8);
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.3px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .uploaded-file-meta {
+            color: rgba(255,255,255,0.35);
+            font-size: 11px;
+            margin-top: 2px;
+        }
+
+        .uploaded-delete-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            border: 1px solid rgba(255,80,80,0.3);
+            background: rgba(255,80,80,0.1);
+            color: #ff6b6b;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+
+        .uploaded-delete-btn:hover {
+            background: rgba(255,80,80,0.25);
+            border-color: rgba(255,80,80,0.5);
+            transform: scale(1.1);
+        }
+
+        .uploaded-controls {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .uploaded-play-btn {
+            width: 46px;
+            height: 46px;
+            border-radius: 50%;
+            border: 2px solid rgba(108,92,231,0.4);
+            background: linear-gradient(135deg, rgba(108,92,231,0.2), rgba(108,92,231,0.08));
+            color: #a78bfa;
+            font-size: 18px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .uploaded-play-btn:hover {
+            background: linear-gradient(135deg, rgba(108,92,231,0.35), rgba(108,92,231,0.15));
+            border-color: rgba(108,92,231,0.7);
+            transform: scale(1.08);
+            box-shadow: 0 4px 20px rgba(108,92,231,0.25);
+        }
+
+        .uploaded-play-btn:active {
+            transform: scale(0.95);
+        }
+
+        .uploaded-play-btn.playing {
+            border-color: #a78bfa;
+            background: linear-gradient(135deg, rgba(108,92,231,0.3), rgba(108,92,231,0.12));
+            animation: upload-playing-pulse 1.5s ease-in-out infinite;
+        }
+
+        @keyframes upload-playing-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(108,92,231,0.3); }
+            50% { box-shadow: 0 0 0 10px rgba(108,92,231,0); }
+        }
+
+        .uploaded-audio-info {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .uploaded-status-row {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+
+        .uploaded-status-text {
+            color: rgba(255,255,255,0.6);
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .uploaded-status-text.is-playing {
+            color: #a78bfa;
+        }
+
+        .uploaded-wave {
+            display: flex;
+            align-items: center;
+            gap: 2px;
+            height: 16px;
+            margin-left: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .uploaded-wave.active {
+            opacity: 1;
+        }
+
+        .uploaded-wave-bar {
+            width: 3px;
+            border-radius: 2px;
+            background: #a78bfa;
+            animation: wave-bar 0.8s ease-in-out infinite;
+        }
+
+        .uploaded-wave-bar:nth-child(1) { height: 5px; animation-delay: 0.1s; }
+        .uploaded-wave-bar:nth-child(2) { height: 10px; animation-delay: 0.25s; }
+        .uploaded-wave-bar:nth-child(3) { height: 7px; animation-delay: 0.4s; }
+        .uploaded-wave-bar:nth-child(4) { height: 14px; animation-delay: 0.55s; }
+        .uploaded-wave-bar:nth-child(5) { height: 9px; animation-delay: 0.7s; }
+
+        .uploaded-progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+            overflow: hidden;
+            margin-bottom: 6px;
+            cursor: pointer;
+        }
+
+        .uploaded-progress-fill {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, #6c5ce7, #a78bfa);
+            border-radius: 4px;
+            transition: width 0.15s linear;
+        }
+
+        .uploaded-time {
+            display: flex;
+            justify-content: space-between;
+            font-size: 10px;
+            color: rgba(255,255,255,0.3);
+            font-variant-numeric: tabular-nums;
+        }
+
+        /* 上傳成功提示 */
+        .upload-success-toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-80px);
+            background: linear-gradient(135deg, #1e1e2e, #2a2a3e);
+            border: 1px solid rgba(108,92,231,0.4);
+            color: #a78bfa;
+            padding: 12px 24px;
+            border-radius: 16px;
+            font-size: 13px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.4);
+            transition: transform 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            pointer-events: none;
+        }
+
+        .upload-success-toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+
+        /* ===== 底部按鈕列 ===== */
+        .info-footer {
+            padding: 16px 28px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .info-close-btn {
+            padding: 10px 32px;
+            background: linear-gradient(135deg, #c9a84c, #dbb960);
+            border: none;
+            border-radius: 25px;
+            color: #1a1a1a;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            letter-spacing: 1px;
+            font-family: inherit;
+            transition: all 0.3s ease;
+        }
+
+        .info-close-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 20px rgba(201,168,76,0.4);
+        }
+
+        .voice-unsupported {
+            display: none;
+            padding: 14px 18px;
+            background: rgba(255,80,80,0.1);
+            border: 1px solid rgba(255,80,80,0.2);
+            border-radius: 12px;
+            color: rgba(255,150,150,0.8);
+            font-size: 13px;
+            line-height: 1.6;
+            margin-top: 16px;
+        }
+
+        .voice-unsupported.show {
+            display: block;
+        }
+
+        /* ===== 底部提示 ===== */
+        .bottom-hint {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.35);
+            font-size: 12px;
+            letter-spacing: 2px;
+        }
+
+        .bottom-hint .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #c9a84c;
+            border-radius: 50%;
+            animation: pulse-glow 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse-glow {
+            0%, 100% { opacity: 0.4; }
+            50% { opacity: 1; }
+        }
+
+        /* ===== 指引列 ===== */
+        .guide-bar {
+            position: fixed;
+            bottom: 50px;
+            left: 50%;
+            transform: translateX(-50%);
+            display: flex;
+            gap: 16px;
+            background: rgba(0,0,0,0.5);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 12px 24px;
+            border-radius: 20px;
+            border: 1px solid rgba(255,255,255,0.08);
+            z-index: 50;
+        }
+
+        .guide-item {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            color: rgba(255,255,255,0.5);
+            font-size: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .guide-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            border: 2px solid;
+            flex-shrink: 0;
+        }
+
+        /* ===== RWD ===== */
+        @media (max-width: 768px) {
+            .viewer-container { width: 95vw; }
+            .scene-switcher { top: 70px; }
+            .hotel-info h1 { font-size: 15px; }
+            .room-badge { font-size: 11px; padding: 6px 14px; }
+            .guide-bar { bottom: 30px; padding: 10px 16px; gap: 12px; }
+            .guide-item { font-size: 10px; }
+            .hotspot-dot { width: 30px; height: 30px; font-size: 14px; }
+            .info-panel { max-width: 95%; border-radius: 20px; }
+            .info-header { padding: 20px 20px 16px; }
+            .info-body { padding: 20px; }
+            .info-footer { padding: 14px 20px 20px; }
+            .audio-section { padding: 14px; }
+            .audio-play-btn { width: 46px; height: 46px; font-size: 18px; }
+            .audio-speed-row { flex-wrap: wrap; }
+            .upload-section { padding: 14px; }
+            .upload-dropzone { padding: 18px 12px; }
+            .uploaded-play-btn { width: 40px; height: 40px; font-size: 16px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 頂部品牌列 -->
+    <div class="top-bar">
+        <div class="hotel-brand">
+            <div class="hotel-logo">R</div>
+            <div class="hotel-info">
+                <h1>THE REGENT</h1>
+                <p>LUXURY COLLECTION</p>
+            </div>
+        </div>
+        <div class="room-badge">👑 皇家尊爵套房</div>
+    </div>
+
+    <!-- 場景切換 -->
+    <div class="scene-switcher">
+        <button class="scene-btn active" onclick="switchScene(0)">🌙 夜景視角</button>
+        <button class="scene-btn" onclick="switchScene(1)">🌊 海景視角</button>
+    </div>
+
+    <!-- 主檢視區 -->
+    <div class="viewer-container">
+
+        <!-- 場景 1：夜景 -->
+        <div class="scene active" id="scene0">
+            <img src="room1.jpg" alt="尊爵套房 夜景視角">
+
+            <div class="hotspot" style="left:48%; top:20%;" onclick="showInfo('chandelier')">
+                <div class="hotspot-ring" style="--dot-color:#f0d78c; --dot-color-dark:#c9a84c;">
+                    <div class="hotspot-dot">✨</div>
+                </div>
+                <div class="hotspot-label">水晶吊燈</div>
+            </div>
+
+            <div class="hotspot" style="left:48%; top:48%;" onclick="showInfo('bed')">
+                <div class="hotspot-ring" style="--dot-color:#FF6B6B; --dot-color-dark:#cc4444;">
+                    <div class="hotspot-dot">🛏️</div>
+                </div>
+                <div class="hotspot-label">豪華大床</div>
+            </div>
+
+            <div class="hotspot" style="left:65%; top:32%;" onclick="showInfo('nightview')">
+                <div class="hotspot-ring" style="--dot-color:#4ECDC4; --dot-color-dark:#2ea89f;">
+                    <div class="hotspot-dot">🌃</div>
+                </div>
+                <div class="hotspot-label">城市夜景</div>
+            </div>
+
+            <div class="hotspot" style="left:15%; top:42%;" onclick="showInfo('mirror')">
+                <div class="hotspot-ring" style="--dot-color:#DDA0DD; --dot-color-dark:#b070b0;">
+                    <div class="hotspot-dot">🪞</div>
+                </div>
+                <div class="hotspot-label">梳妝鏡區</div>
+            </div>
+
+            <div class="hotspot" style="left:34%; top:38%;" onclick="showInfo('lamp')">
+                <div class="hotspot-ring" style="--dot-color:#FFD93D; --dot-color-dark:#ccad00;">
+                    <div class="hotspot-dot">💡</div>
+                </div>
+                <div class="hotspot-label">床頭燈飾</div>
+            </div>
+
+            <div class="hotspot" style="left:73%; top:48%;" onclick="showInfo('desk')">
+                <div class="hotspot-ring" style="--dot-color:#96CEB4; --dot-color-dark:#6aad8e;">
+                    <div class="hotspot-dot">💼</div>
+                </div>
+                <div class="hotspot-label">商務書桌</div>
+            </div>
+        </div>
+
+        <!-- 場景 2：海景 -->
+        <div class="scene" id="scene1">
+            <img src="room2.jpg" alt="尊爵套房 海景視角">
+
+            <div class="hotspot" style="left:48%; top:20%;" onclick="showInfo('chandelier')">
+                <div class="hotspot-ring" style="--dot-color:#f0d78c; --dot-color-dark:#c9a84c;">
+                    <div class="hotspot-dot">✨</div>
+                </div>
+                <div class="hotspot-label">水晶吊燈</div>
+            </div>
+
+            <div class="hotspot" style="left:68%; top:48%;" onclick="showInfo('bed')">
+                <div class="hotspot-ring" style="--dot-color:#FF6B6B; --dot-color-dark:#cc4444;">
+                    <div class="hotspot-dot">🛏️</div>
+                </div>
+                <div class="hotspot-label">豪華大床</div>
+            </div>
+
+            <div class="hotspot" style="left:45%; top:35%;" onclick="showInfo('seaview')">
+                <div class="hotspot-ring" style="--dot-color:#45B7D1; --dot-color-dark:#2a8fa6;">
+                    <div class="hotspot-dot">🌊</div>
+                </div>
+                <div class="hotspot-label">海灣景觀</div>
+            </div>
+
+            <div class="hotspot" style="left:28%; top:42%;" onclick="showInfo('tv')">
+                <div class="hotspot-ring" style="--dot-color:#4ECDC4; --dot-color-dark:#2ea89f;">
+                    <div class="hotspot-dot">📺</div>
+                </div>
+                <div class="hotspot-label">智能電視</div>
+            </div>
+
+            <div class="hotspot" style="left:10%; top:48%;" onclick="showInfo('closet')">
+                <div class="hotspot-ring" style="--dot-color:#DDA0DD; --dot-color-dark:#b070b0;">
+                    <div class="hotspot-dot">👔</div>
+                </div>
+                <div class="hotspot-label">衣帽間</div>
+            </div>
+
+            <div class="hotspot" style="left:38%; top:55%;" onclick="showInfo('chair')">
+                <div class="hotspot-ring" style="--dot-color:#96CEB4; --dot-color-dark:#6aad8e;">
+                    <div class="hotspot-dot">🪑</div>
+                </div>
+                <div class="hotspot-label">休閒座椅</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 底部指引 -->
+    <div class="guide-bar">
+        <div class="guide-item">
+            <div class="guide-dot" style="border-color:#FF6B6B; background:rgba(255,107,107,0.3);"></div>寢具
+        </div>
+        <div class="guide-item">
+            <div class="guide-dot" style="border-color:#4ECDC4; background:rgba(78,205,196,0.3);"></div>影音
+        </div>
+        <div class="guide-item">
+            <div class="guide-dot" style="border-color:#f0d78c; background:rgba(240,215,140,0.3);"></div>燈飾
+        </div>
+        <div class="guide-item">
+            <div class="guide-dot" style="border-color:#45B7D1; background:rgba(69,183,209,0.3);"></div>景觀
+        </div>
+        <div class="guide-item">
+            <div class="guide-dot" style="border-color:#DDA0DD; background:rgba(221,160,221,0.3);"></div>設施
+        </div>
+    </div>
+
+    <!-- 上傳成功提示 -->
+    <div class="upload-success-toast" id="uploadToast">
+        <span>✅</span>
+        <span id="uploadToastText">語音檔案上傳成功！</span>
+    </div>
+
+    <!-- 資訊面板 -->
+    <div class="info-overlay" id="infoOverlay" onclick="closeInfo(event)">
+        <div class="info-backdrop"></div>
+        <div class="info-panel" onclick="event.stopPropagation()">
+            <div class="info-header">
+                <div class="info-icon-box" id="infoIconBox">🛏️</div>
+                <div>
+                    <div class="info-title" id="infoTitle">豪華大床</div>
+                    <div class="info-subtitle" id="infoSubtitle">PREMIUM BEDDING</div>
+                </div>
+            </div>
+            <div class="info-body">
+                <div class="info-description" id="infoDesc"></div>
+                <div class="info-features" id="infoTags"></div>
+
+                <!-- ====== 語音播放區塊 ====== -->
+                <div class="audio-section" id="audioSection">
+                    <div class="audio-header">
+                        <span class="audio-header-icon">🎙️</span>
+                        <span class="audio-header-text">語音導覽</span>
+                        <span class="audio-header-lang">普通話 Mandarin</span>
+                    </div>
+                    <div class="audio-controls">
+                        <button class="audio-play-btn" id="audioPlayBtn" onclick="toggleAudio()">
+                            <span class="play-icon">▶</span>
+                            <span class="pause-icon">⏸</span>
+                            <span class="loading-icon">⟳</span>
+                        </button>
+                        <div class="audio-info">
+                            <div class="audio-title-row">
+                                <span class="audio-name" id="audioName">點擊播放語音</span>
+                                <span class="audio-status" id="audioStatus">準備就緒</span>
+                                <div class="audio-wave" id="audioWave">
+                                    <div class="audio-wave-bar"></div>
+                                    <div class="audio-wave-bar"></div>
+                                    <div class="audio-wave-bar"></div>
+                                    <div class="audio-wave-bar"></div>
+                                    <div class="audio-wave-bar"></div>
+                                </div>
+                            </div>
+                            <div class="audio-progress-bar">
+                                <div class="audio-progress-fill" id="audioProgress"></div>
+                            </div>
+                            <div class="audio-time">
+                                <span id="audioElapsed">0:00</span>
+                                <span id="audioDuration">--:--</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 語速控制 -->
+                    <div class="audio-speed-row">
+                        <span class="speed-label">語速：</span>
+                        <button class="speed-btn" onclick="setSpeed(0.7)" data-speed="0.7">0.7×</button>
+                        <button class="speed-btn" onclick="setSpeed(0.85)" data-speed="0.85">0.85×</button>
+                        <button class="speed-btn active" onclick="setSpeed(1)" data-speed="1">1×</button>
+                        <button class="speed-btn" onclick="setSpeed(1.2)" data-speed="1.2">1.2×</button>
+                        <button class="speed-btn" onclick="setSpeed(1.5)" data-speed="1.5">1.5×</button>
+                    </div>
+
+                    <!-- 瀏覽器不支援提示 -->
+                    <div class="voice-unsupported" id="voiceUnsupported">
+                        ⚠️ 您的瀏覽器不支援語音合成功能，建議使用 Chrome、Edge 或 Safari 瀏覽器。
+                    </div>
+                </div>
+
+                <!-- ====== 學生上傳語音區塊 ====== -->
+                <div class="upload-section" id="uploadSection">
+                    <div class="upload-header">
+                        <span class="upload-header-icon">📤</span>
+                        <span class="upload-header-text">我的錄音</span>
+                        <span class="upload-header-badge">對比練習</span>
+                    </div>
+
+                    <!-- 上傳拖曳區 -->
+                    <div class="upload-dropzone" id="uploadDropzone" onclick="document.getElementById('uploadFileInput').click()">
+                        <span class="upload-dropzone-icon">🎤</span>
+                        <div class="upload-dropzone-text">
+                            拖曳語音檔案到這裡，或<strong>點擊上傳</strong>
+                        </div>
+                        <div class="upload-dropzone-hint">支援 MP3、WAV、OGG、M4A、WEBM 格式（最大 50MB）</div>
+                    </div>
+                    <input type="file" class="upload-file-input" id="uploadFileInput" accept="audio/*">
+
+                    <!-- 已上傳的播放器 -->
+                    <div class="uploaded-player" id="uploadedPlayer">
+                        <div class="uploaded-player-header">
+                            <div class="uploaded-file-icon">🎤</div>
+                            <div class="uploaded-file-info">
+                                <div class="uploaded-file-name" id="uploadedFileName">my_recording.mp3</div>
+                                <div class="uploaded-file-meta" id="uploadedFileMeta">MP3 · 1.2 MB</div>
+                            </div>
+                            <button class="uploaded-delete-btn" onclick="deleteUploadedAudio()" title="刪除錄音">✕</button>
+                        </div>
+                        <div class="uploaded-controls">
+                            <button class="uploaded-play-btn" id="uploadedPlayBtn" onclick="toggleUploadedAudio()">
+                                <span id="uploadedPlayIcon">▶</span>
+                            </button>
+                            <div class="uploaded-audio-info">
+                                <div class="uploaded-status-row">
+                                    <span class="uploaded-status-text" id="uploadedStatus">準備就緒</span>
+                                    <div class="uploaded-wave" id="uploadedWave">
+                                        <div class="uploaded-wave-bar"></div>
+                                        <div class="uploaded-wave-bar"></div>
+                                        <div class="uploaded-wave-bar"></div>
+                                        <div class="uploaded-wave-bar"></div>
+                                        <div class="uploaded-wave-bar"></div>
+                                    </div>
+                                </div>
+                                <div class="uploaded-progress-bar" id="uploadedProgressBar" onclick="seekUploadedAudio(event)">
+                                    <div class="uploaded-progress-fill" id="uploadedProgress"></div>
+                                </div>
+                                <div class="uploaded-time">
+                                    <span id="uploadedElapsed">0:00</span>
+                                    <span id="uploadedDuration">--:--</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="info-footer">
+                <button class="info-close-btn" onclick="closeInfo()">關閉</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="bottom-hint">
+        <div class="pulse-dot"></div>
+        點擊標記探索房間設施 · 支援語音導覽 · 可上傳錄音對比
+    </div>
+
+    <script>
+        /* =========================================
+           設施資料庫（含語音播報用的簡體中文文稿）
+           ========================================= */
+        const infoData = {
+            bed: {
+                icon: '🛏️',
+                bgColor: 'rgba(255,107,107,0.15)',
+                title: '豪華大床',
+                subtitle: 'KING SIZE BED',
+                desc: 'King Size 豪華大床，配備頂級埃及長絨棉床品、進口羽絨被及記憶棉枕頭。床墊採用獨立筒彈簧設計，搭配五星級酒店專屬床褥系統，為您帶來極致的睡眠體驗。',
+                tags: ['King Size', '羽絨被', '記憶棉枕', '獨立筒床墊'],
+                speech: '豪华大床。这是一张King Size豪华大床，配备顶级埃及长绒棉床品、进口羽绒被及记忆棉枕头。床垫采用独立筒弹簧设计，搭配五星级酒店专属床褥系统，为您带来极致的睡眠体验。'
+            },
+            chandelier: {
+                icon: '✨',
+                bgColor: 'rgba(240,215,140,0.15)',
+                title: '水晶吊燈',
+                subtitle: 'CRYSTAL CHANDELIER',
+                desc: '手工打造施華洛世奇水晶吊燈，數百顆精選水晶折射出璀璨光芒，為整個空間增添奢華氛圍。支援智能調光系統，可依據場景切換暖白、日光等多種燈光模式。',
+                tags: ['施華洛世奇', '智能調光', '手工打造', '情境模式'],
+                speech: '水晶吊灯。这是一盏手工打造的施华洛世奇水晶吊灯，数百颗精选水晶折射出璀璨光芒，为整个空间增添奢华氛围。支持智能调光系统，可根据场景切换暖白、日光等多种灯光模式。'
+            },
+            nightview: {
+                icon: '🌃',
+                bgColor: 'rgba(78,205,196,0.15)',
+                title: '城市夜景',
+                subtitle: 'CITY NIGHT VIEW',
+                desc: '透過落地窗可飽覽璀璨城市天際線，高樓燈火與星空交相輝映。配備電動遮光窗簾及紗簾雙層系統，一鍵切換開闔，在都會繁華與寧靜私密間自由轉換。',
+                tags: ['城市天際線', '電動窗簾', '高樓層景觀', '夜景'],
+                speech: '城市夜景。透过落地窗可饱览璀璨城市天际线，高楼灯火与星空交相辉映。配备电动遮光窗帘及纱帘双层系统，一键切换开合，在都会繁华与宁静私密间自由转换。'
+            },
+            seaview: {
+                icon: '🌊',
+                bgColor: 'rgba(69,183,209,0.15)',
+                title: '海灣景觀',
+                subtitle: 'OCEAN BAY VIEW',
+                desc: '正面海景視野，可欣賞遼闊海灣及遠方天際線。日出晨曦灑落海面，傍晚金色夕陽映照波光，每一刻都是不同的風景畫卷。',
+                tags: ['正面海景', '日出美景', '無敵視野', '落地窗'],
+                speech: '海湾景观。正面海景视野，可欣赏辽阔海湾及远方天际线。日出晨曦洒落海面，傍晚金色夕阳映照波光，每一刻都是不同的风景画卷。'
+            },
+            mirror: {
+                icon: '🪞',
+                bgColor: 'rgba(221,160,221,0.15)',
+                title: '梳妝鏡區',
+                subtitle: 'VANITY AREA',
+                desc: '全幅照明化妝鏡，配備專業級三色溫可調式LED燈帶，並提供放大鏡及各式備品。花崗岩檯面搭配胡桃木收納櫃，兼具實用與美觀。',
+                tags: ['LED燈帶', '三色溫', '放大鏡', '花崗岩檯面'],
+                speech: '梳妆镜区。全幅照明化妆镜，配备专业级三色温可调式LED灯带，并提供放大镜及各式备品。花岗岩台面搭配胡桃木收纳柜，兼具实用与美观。'
+            },
+            lamp: {
+                icon: '💡',
+                bgColor: 'rgba(255,217,61,0.15)',
+                title: '床頭燈飾',
+                subtitle: 'BEDSIDE LAMP',
+                desc: '訂製銅製底座檯燈，搭配手工絲綢燈罩，營造溫暖柔和的臥室氛圍。內建USB充電口及無線充電板，床頭即可為手機充電，方便又貼心。',
+                tags: ['手工燈罩', 'USB充電', '無線充電', '觸控調光'],
+                speech: '床头灯饰。订制铜制底座台灯，搭配手工丝绸灯罩，营造温暖柔和的卧室氛围。内建USB充电口及无线充电板，床头即可为手机充电，方便又贴心。'
+            },
+            desk: {
+                icon: '💼',
+                bgColor: 'rgba(150,206,180,0.15)',
+                title: '商務書桌',
+                subtitle: 'BUSINESS DESK',
+                desc: '寬敞的胡桃木書桌，搭配人體工學座椅。配備高速USB-C充電座、萬國轉接插座及LED護眼檯燈。提供免費高速Wi-Fi（1Gbps），滿足所有商務需求。',
+                tags: ['人體工學椅', '1Gbps Wi-Fi', 'USB-C充電', '萬國插座'],
+                speech: '商务书桌。宽敞的胡桃木书桌，搭配人体工学座椅。配备高速USB-C充电座、万国转接插座及LED护眼台灯。提供免费高速Wi-Fi，速度可达1Gbps，满足所有商务需求。'
+            },
+            tv: {
+                icon: '📺',
+                bgColor: 'rgba(78,205,196,0.15)',
+                title: '智能電視',
+                subtitle: 'SMART TV',
+                desc: '75吋 4K OLED 智能電視，內建 Netflix、Disney+、YouTube 等串流平台。支援 AirPlay 及 Chromecast 無線投屏，亦可連接藍牙音響系統享受環繞音效。',
+                tags: ['75吋 4K OLED', 'Netflix', 'AirPlay', '藍牙音響'],
+                speech: '智能电视。75英寸4K OLED智能电视，内建Netflix、Disney+、YouTube等流媒体平台。支持AirPlay及Chromecast无线投屏，也可连接蓝牙音响系统享受环绕音效。'
+            },
+            closet: {
+                icon: '👔',
+                bgColor: 'rgba(221,160,221,0.15)',
+                title: '衣帽間',
+                subtitle: 'WALK-IN CLOSET',
+                desc: '寬敞步入式衣帽間，配備自動感應燈光、電子保險箱、熨燙設備及全身穿衣鏡。提供高級木質衣架及芳香除濕設備，細心呵護您的每一件衣物。',
+                tags: ['步入式', '電子保險箱', '熨燙設備', '芳香除濕'],
+                speech: '衣帽间。宽敞步入式衣帽间，配备自动感应灯光、电子保险箱、熨烫设备及全身穿衣镜。提供高级木质衣架及芳香除湿设备，细心呵护您的每一件衣物。'
+            },
+            chair: {
+                icon: '🪑',
+                bgColor: 'rgba(150,206,180,0.15)',
+                title: '休閒座椅',
+                subtitle: 'LOUNGE CHAIR',
+                desc: '義大利進口真皮休閒椅，搭配腳踏凳及小圓桌，是品茶閱讀的理想角落。椅旁設有閱讀燈及充電插座，讓您在舒適中享受悠閒時光。',
+                tags: ['義大利真皮', '閱讀角落', '腳踏凳', '品茶空間'],
+                speech: '休闲座椅。意大利进口真皮休闲椅，搭配脚踏凳及小圆桌，是品茶阅读的理想角落。椅旁设有阅读灯及充电插座，让您在舒适中享受悠闲时光。'
+            }
+        };
+
+        /* =========================================
+           語音合成引擎
+           ========================================= */
+        let speechSynth = window.speechSynthesis || null;
+        let currentUtterance = null;
+        let currentSpeechText = '';
+        let isSpeaking = false;
+        let isPaused = false;
+        let speechRate = 1;
+        let progressTimer = null;
+        let speechStartTime = 0;
+        let estimatedDuration = 0;
+
+        // 檢查瀏覽器支援
+        function checkSpeechSupport() {
+            if (!speechSynth) {
+                document.getElementById('voiceUnsupported').classList.add('show');
+                document.getElementById('audioSection').style.opacity = '0.4';
+                document.getElementById('audioPlayBtn').disabled = true;
+                return false;
+            }
+            return true;
+        }
+
+        // 取得中文語音
+        function getChineseVoice() {
+            const voices = speechSynth.getVoices();
+            const priorities = [
+                v => v.lang === 'zh-CN',
+                v => v.lang.startsWith('zh-CN'),
+                v => v.lang === 'zh-TW',
+                v => v.lang.startsWith('zh'),
+                v => v.name.toLowerCase().includes('chinese'),
+                v => v.name.toLowerCase().includes('mandarin'),
+                v => v.lang.startsWith('cmn')
+            ];
+            for (const test of priorities) {
+                const found = voices.find(test);
+                if (found) return found;
+            }
+            return null;
+        }
+
+        // 確保語音列表已載入
+        if (speechSynth) {
+            speechSynth.getVoices();
+            speechSynth.onvoiceschanged = () => speechSynth.getVoices();
+        }
+
+        // 播放/暫停切換
+        function toggleAudio() {
+            if (!checkSpeechSupport()) return;
+
+            // 先停止學生上傳的音檔播放
+            stopUploadedAudio();
+
+            const btn = document.getElementById('audioPlayBtn');
+
+            if (isSpeaking && !isPaused) {
+                speechSynth.pause();
+                isPaused = true;
+                btn.classList.remove('playing');
+                updateStatus('已暫停', false);
+                stopProgress();
+            } else if (isPaused) {
+                speechSynth.resume();
+                isPaused = false;
+                btn.classList.add('playing');
+                updateStatus('播放中...', true);
+                startProgress();
+            } else {
+                startSpeech(currentSpeechText);
+            }
+        }
+
+        // 開始語音播放
+        function startSpeech(text) {
+            if (!text || !speechSynth) return;
+
+            stopSpeech();
+
+            const btn = document.getElementById('audioPlayBtn');
+            btn.classList.add('loading');
+
+            currentUtterance = new SpeechSynthesisUtterance(text);
+            currentUtterance.lang = 'zh-CN';
+            currentUtterance.rate = speechRate;
+            currentUtterance.pitch = 1;
+            currentUtterance.volume = 1;
+
+            const voice = getChineseVoice();
+            if (voice) {
+                currentUtterance.voice = voice;
+            }
+
+            estimatedDuration = (text.length / (4.5 * speechRate)) * 1000;
+            document.getElementById('audioDuration').textContent = formatTime(estimatedDuration / 1000);
+
+            currentUtterance.onstart = () => {
+                btn.classList.remove('loading');
+                btn.classList.add('playing');
+                isSpeaking = true;
+                isPaused = false;
+                speechStartTime = Date.now();
+                updateStatus('播放中...', true);
+                startProgress();
+            };
+
+            currentUtterance.onend = () => {
+                resetAudioUI();
+            };
+
+            currentUtterance.onerror = (e) => {
+                if (e.error !== 'canceled') {
+                    console.warn('語音錯誤:', e.error);
+                    updateStatus('播放失敗', false);
+                }
+                resetAudioUI();
+            };
+
+            currentUtterance.onpause = () => {
+                updateStatus('已暫停', false);
+            };
+
+            currentUtterance.onresume = () => {
+                updateStatus('播放中...', true);
+            };
+
+            speechSynth.speak(currentUtterance);
+        }
+
+        // 停止語音
+        function stopSpeech() {
+            if (speechSynth) {
+                speechSynth.cancel();
+            }
+            resetAudioUI();
+        }
+
+        // 重置 UI
+        function resetAudioUI() {
+            const btn = document.getElementById('audioPlayBtn');
+            btn.classList.remove('playing', 'loading');
+            isSpeaking = false;
+            isPaused = false;
+            currentUtterance = null;
+            stopProgress();
+            document.getElementById('audioProgress').style.width = '0%';
+            document.getElementById('audioElapsed').textContent = '0:00';
+            updateStatus('準備就緒', false);
+        }
+
+        // 更新狀態
+        function updateStatus(text, playing) {
+            const statusEl = document.getElementById('audioStatus');
+            const waveEl = document.getElementById('audioWave');
+            statusEl.textContent = text;
+            statusEl.classList.toggle('is-playing', playing);
+            waveEl.classList.toggle('active', playing);
+        }
+
+        // 進度條計時
+        function startProgress() {
+            stopProgress();
+            progressTimer = setInterval(() => {
+                if (!isSpeaking || isPaused) return;
+                const elapsed = Date.now() - speechStartTime;
+                const pct = Math.min((elapsed / estimatedDuration) * 100, 98);
+                document.getElementById('audioProgress').style.width = pct + '%';
+                document.getElementById('audioElapsed').textContent = formatTime(elapsed / 1000);
+            }, 200);
+        }
+
+        function stopProgress() {
+            if (progressTimer) {
+                clearInterval(progressTimer);
+                progressTimer = null;
+            }
+        }
+
+        // 格式化時間
+        function formatTime(seconds) {
+            seconds = Math.max(0, Math.floor(seconds));
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return m + ':' + (s < 10 ? '0' : '') + s;
+        }
+
+        // 設定語速
+        function setSpeed(rate) {
+            speechRate = rate;
+            document.querySelectorAll('.speed-btn').forEach(b => {
+                b.classList.toggle('active', parseFloat(b.dataset.speed) === rate);
+            });
+            if (isSpeaking) {
+                estimatedDuration = (currentSpeechText.length / (4.5 * rate)) * 1000;
+                document.getElementById('audioDuration').textContent = formatTime(estimatedDuration / 1000);
+                startSpeech(currentSpeechText);
+            }
+        }
+
+        /* =========================================
+           學生上傳語音功能
+           ========================================= */
+        // 每個設備獨立儲存上傳的音檔（記憶體內）
+        const uploadedAudios = {};  // key: facility key, value: { url, name, size, type }
+        let currentFacilityKey = '';
+        let uploadedAudioEl = null;  // 全域 Audio 物件
+        let uploadedProgressTimer = null;
+        let isUploadedPlaying = false;
+
+        // 初始化拖曳上傳
+        const dropzone = document.getElementById('uploadDropzone');
+        const fileInput = document.getElementById('uploadFileInput');
+
+        dropzone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropzone.classList.add('dragover');
+        });
+
+        dropzone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+        });
+
+        dropzone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            dropzone.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleUploadFile(files[0]);
+            }
+        });
+
+        fileInput.addEventListener('change', (e) => {
+            if (e.target.files.length > 0) {
+                handleUploadFile(e.target.files[0]);
+                e.target.value = '';  // 重置以允許重複上傳同一檔案
+            }
+        });
+
+        // 處理上傳的檔案
+        function handleUploadFile(file) {
+            // 驗證是否為音檔
+            if (!file.type.startsWith('audio/')) {
+                showToast('⚠️ 請上傳音訊檔案（MP3、WAV、OGG 等）');
+                return;
+            }
+
+            // 驗證檔案大小（50MB）
+            if (file.size > 50 * 1024 * 1024) {
+                showToast('⚠️ 檔案過大，請上傳 50MB 以內的檔案');
+                return;
+            }
+
+            // 釋放舊的 Object URL
+            if (uploadedAudios[currentFacilityKey]) {
+                URL.revokeObjectURL(uploadedAudios[currentFacilityKey].url);
+            }
+
+            // 建立 Object URL
+            const url = URL.createObjectURL(file);
+
+            // 取得檔案類型
+            const ext = file.name.split('.').pop().toUpperCase();
+            const sizeMB = (file.size / (1024 * 1024)).toFixed(1);
+
+            uploadedAudios[currentFacilityKey] = {
+                url: url,
+                name: file.name,
+                size: file.size,
+                sizeFormatted: sizeMB + ' MB',
+                type: ext
+            };
+
+            showToast('✅ 語音檔案「' + file.name + '」上傳成功！');
+            renderUploadedPlayer();
+        }
+
+        // 渲染已上傳的播放器
+        function renderUploadedPlayer() {
+            const data = uploadedAudios[currentFacilityKey];
+            const playerEl = document.getElementById('uploadedPlayer');
+            const dropzoneEl = document.getElementById('uploadDropzone');
+
+            if (data) {
+                // 顯示播放器，隱藏上傳區
+                dropzoneEl.style.display = 'none';
+                playerEl.classList.add('show');
+
+                document.getElementById('uploadedFileName').textContent = data.name;
+                document.getElementById('uploadedFileMeta').textContent = data.type + ' · ' + data.sizeFormatted;
+
+                // 停止之前的播放
+                stopUploadedAudio();
+
+                // 載入新音檔取得時長
+                uploadedAudioEl = new Audio(data.url);
+                uploadedAudioEl.addEventListener('loadedmetadata', () => {
+                    document.getElementById('uploadedDuration').textContent = formatTime(uploadedAudioEl.duration);
+                });
+                uploadedAudioEl.addEventListener('ended', () => {
+                    resetUploadedUI();
+                });
+                uploadedAudioEl.addEventListener('timeupdate', () => {
+                    if (uploadedAudioEl.duration) {
+                        const pct = (uploadedAudioEl.currentTime / uploadedAudioEl.duration) * 100;
+                        document.getElementById('uploadedProgress').style.width = pct + '%';
+                        document.getElementById('uploadedElapsed').textContent = formatTime(uploadedAudioEl.currentTime);
+                    }
+                });
+
+                // 重置 UI
+                document.getElementById('uploadedProgress').style.width = '0%';
+                document.getElementById('uploadedElapsed').textContent = '0:00';
+                document.getElementById('uploadedStatus').textContent = '準備就緒';
+                document.getElementById('uploadedStatus').classList.remove('is-playing');
+                document.getElementById('uploadedPlayIcon').textContent = '▶';
+                document.getElementById('uploadedPlayBtn').classList.remove('playing');
+                document.getElementById('uploadedWave').classList.remove('active');
+            } else {
+                // 沒有上傳：顯示上傳區，隱藏播放器
+                dropzoneEl.style.display = '';
+                playerEl.classList.remove('show');
+                stopUploadedAudio();
+            }
+        }
+
+        // 播放/暫停已上傳的音檔
+        function toggleUploadedAudio() {
+            if (!uploadedAudioEl) return;
+
+            // 先停止系統語音導覽
+            stopSpeech();
+
+            if (isUploadedPlaying) {
+                uploadedAudioEl.pause();
+                isUploadedPlaying = false;
+                document.getElementById('uploadedPlayIcon').textContent = '▶';
+                document.getElementById('uploadedPlayBtn').classList.remove('playing');
+                document.getElementById('uploadedStatus').textContent = '已暫停';
+                document.getElementById('uploadedStatus').classList.remove('is-playing');
+                document.getElementById('uploadedWave').classList.remove('active');
+            } else {
+                uploadedAudioEl.play().then(() => {
+                    isUploadedPlaying = true;
+                    document.getElementById('uploadedPlayIcon').textContent = '⏸';
+                    document.getElementById('uploadedPlayBtn').classList.add('playing');
+                    document.getElementById('uploadedStatus').textContent = '播放中...';
+                    document.getElementById('uploadedStatus').classList.add('is-playing');
+                    document.getElementById('uploadedWave').classList.add('active');
+                }).catch(err => {
+                    console.warn('播放失敗:', err);
+                    document.getElementById('uploadedStatus').textContent = '播放失敗';
+                });
+            }
+        }
+
+        // 進度條點擊跳轉
+        function seekUploadedAudio(e) {
+            if (!uploadedAudioEl || !uploadedAudioEl.duration) return;
+            const bar = document.getElementById('uploadedProgressBar');
+            const rect = bar.getBoundingClientRect();
+            const pct = (e.clientX - rect.left) / rect.width;
+            uploadedAudioEl.currentTime = pct * uploadedAudioEl.duration;
+        }
+
+        // 停止已上傳的音檔播放
+        function stopUploadedAudio() {
+            if (uploadedAudioEl) {
+                uploadedAudioEl.pause();
+                uploadedAudioEl.currentTime = 0;
+            }
+            isUploadedPlaying = false;
+            document.getElementById('uploadedPlayIcon').textContent = '▶';
+            document.getElementById('uploadedPlayBtn').classList.remove('playing');
+            document.getElementById('uploadedStatus').textContent = '準備就緒';
+            document.getElementById('uploadedStatus').classList.remove('is-playing');
+            document.getElementById('uploadedWave').classList.remove('active');
+            document.getElementById('uploadedProgress').style.width = '0%';
+            document.getElementById('uploadedElapsed').textContent = '0:00';
+        }
+
+        // 重置上傳播放器 UI
+        function resetUploadedUI() {
+            isUploadedPlaying = false;
+            document.getElementById('uploadedPlayIcon').textContent = '▶';
+            document.getElementById('uploadedPlayBtn').classList.remove('playing');
+            document.getElementById('uploadedStatus').textContent = '播放完畢';
+            document.getElementById('uploadedStatus').classList.remove('is-playing');
+            document.getElementById('uploadedWave').classList.remove('active');
+            document.getElementById('uploadedProgress').style.width = '100%';
+        }
+
+        // 刪除已上傳的音檔
+        function deleteUploadedAudio() {
+            if (!currentFacilityKey) return;
+
+            stopUploadedAudio();
+
+            if (uploadedAudios[currentFacilityKey]) {
+                URL.revokeObjectURL(uploadedAudios[currentFacilityKey].url);
+                delete uploadedAudios[currentFacilityKey];
+            }
+
+            uploadedAudioEl = null;
+            renderUploadedPlayer();
+            showToast('🗑️ 錄音已刪除');
+        }
+
+        // 顯示提示 Toast
+        function showToast(msg) {
+            const toast = document.getElementById('uploadToast');
+            document.getElementById('uploadToastText').textContent = msg;
+            toast.classList.add('show');
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 2500);
+        }
+
+        /* =========================================
+           場景切換
+           ========================================= */
+        function switchScene(index) {
+            document.querySelectorAll('.scene').forEach((s, i) => {
+                s.classList.toggle('active', i === index);
+            });
+            document.querySelectorAll('.scene-btn').forEach((b, i) => {
+                b.classList.toggle('active', i === index);
+            });
+        }
+
+        /* =========================================
+           顯示資訊面板
+           ========================================= */
+        function showInfo(key) {
+            const data = infoData[key];
+            if (!data) return;
+
+            // 停止上一段語音
+            stopSpeech();
+            stopUploadedAudio();
+
+            // 記錄目前設備 key
+            currentFacilityKey = key;
+
+            document.getElementById('infoIconBox').innerHTML = data.icon;
+            document.getElementById('infoIconBox').style.background = data.bgColor;
+            document.getElementById('infoTitle').textContent = data.title;
+            document.getElementById('infoSubtitle').textContent = data.subtitle;
+            document.getElementById('infoDesc').textContent = data.desc;
+
+            const tagsContainer = document.getElementById('infoTags');
+            tagsContainer.innerHTML = data.tags.map(t => `<span class="info-tag">${t}</span>`).join('');
+
+            // 設定語音文稿
+            currentSpeechText = data.speech || data.desc;
+            document.getElementById('audioName').textContent = data.title + ' — 語音導覽';
+            document.getElementById('audioDuration').textContent = formatTime((currentSpeechText.length / (4.5 * speechRate)));
+            document.getElementById('audioProgress').style.width = '0%';
+            document.getElementById('audioElapsed').textContent = '0:00';
+            updateStatus('準備就緒', false);
+
+            // 檢查支援
+            checkSpeechSupport();
+
+            // 渲染上傳播放器（根據該設備是否已上傳）
+            renderUploadedPlayer();
+
+            document.getElementById('infoOverlay').classList.add('show');
+        }
+
+        /* =========================================
+           關閉資訊面板
+           ========================================= */
+        function closeInfo(e) {
+            if (e && e.target !== e.currentTarget && !e.target.classList.contains('info-backdrop')) return;
+            stopSpeech();
+            stopUploadedAudio();
+            document.getElementById('infoOverlay').classList.remove('show');
+        }
+
+        // ESC 鍵關閉
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') {
+                stopSpeech();
+                stopUploadedAudio();
+                closeInfo();
+            }
+        });
+
+        // 頁面離開時停止語音 & 清理 Object URLs
+        window.addEventListener('beforeunload', () => {
+            if (speechSynth) speechSynth.cancel();
+            if (uploadedAudioEl) uploadedAudioEl.pause();
+            // 釋放所有 Object URLs
+            for (const key in uploadedAudios) {
+                URL.revokeObjectURL(uploadedAudios[key].url);
+            }
+        });
+
+        // 熱點進場動畫延遲
+        document.querySelectorAll('.hotspot').forEach((h, i) => {
+            h.style.animationDelay = `${0.8 + i * 0.12}s`;
+        });
+    </script>
+
+
+</body></html>
