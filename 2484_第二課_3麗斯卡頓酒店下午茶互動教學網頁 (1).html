@@ -1,0 +1,1264 @@
+<!DOCTYPE html><html lang="zh-TW" xmlns:mso="urn:schemas-microsoft-com:office:office" xmlns:msdt="uuid:C2F41010-65B3-11d1-A29F-00AA00C14882"><head><meta name="x-poe-datastore-behavior" content="local_only"><meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' data: blob: https://cdnjs.cloudflare.com https://cdn.jsdelivr.net https://code.jquery.com https://unpkg.com https://d3js.org https://threejs.org https://cdn.plot.ly https://stackpath.bootstrapcdn.com https://maps.googleapis.com https://cdn.tailwindcss.com https://ajax.googleapis.com https://kit.fontawesome.com https://cdn.datatables.net https://maxcdn.bootstrapcdn.com https://code.highcharts.com https://tako-static-assets-production.s3.amazonaws.com https://www.youtube.com https://fonts.googleapis.com https://fonts.gstatic.com https://pfst.cf2.poecdn.net https://puc.poecdn.net https://i.imgur.com https://wikimedia.org https://*.icons8.com https://*.giphy.com https://picsum.photos https://images.unsplash.com; frame-src 'self' https://www.youtube.com https://trytako.com; child-src 'self'; manifest-src 'self'; worker-src 'self'; upgrade-insecure-requests; block-all-mixed-content;">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title></title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;500;700&amp;family=Noto+Sans+TC:wght@300;400;500;700&amp;display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans TC', sans-serif;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            line-height: 1.8;
+        }
+        
+        .hero-section {
+            background: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+            color: white;
+        }
+        
+        .content-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            margin-bottom: 30px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        }
+        
+        .info-item {
+            background: #f0f9ff;
+            border-left: 5px solid #0ea5e9;
+            padding: 20px;
+            margin: 15px 0;
+            border-radius: 8px;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+        
+        .info-item:hover {
+            transform: translateX(5px);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.2);
+        }
+        
+        .info-item.highlighted {
+            background: #fef3c7;
+            border-left-color: #f59e0b;
+            box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+        }
+        
+        .analyze-btn {
+            background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+        
+        .analyze-btn:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 15px rgba(14, 165, 233, 0.4);
+        }
+        
+        .answer-card {
+            background: #f0fdf4;
+            border: 3px solid #22c55e;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            position: relative;
+        }
+        
+        .sentence-structure {
+            background: #fef3c7;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-weight: 700;
+            color: #92400e;
+            border-bottom: 2px solid #f59e0b;
+        }
+        
+        .effect-badge {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            margin: 5px 5px 5px 0;
+        }
+        
+        .show-relation-btn {
+            background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+        
+        .show-relation-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(34, 197, 94, 0.4);
+        }
+        
+        .annotation {
+            background: #fef3c7;
+            border-left: 4px solid #f59e0b;
+            padding: 15px;
+            margin: 15px 0;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        .annotation.show {
+            display: block;
+            animation: slideDown 0.4s ease;
+        }
+        
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .section-title {
+            color: #be123c;
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 30px 0 20px 0;
+            padding-bottom: 15px;
+            border-bottom: 3px solid #e11d48;
+        }
+        
+        .btn-download {
+            background: linear-gradient(135deg, #be123c 0%, #e11d48 100%);
+            color: white;
+            padding: 16px 36px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(190, 18, 60, 0.3);
+            margin: 10px;
+        }
+        
+        .btn-download:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(190, 18, 60, 0.4);
+        }
+        
+        .connected {
+            animation: pulse 1s ease;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .tab-button {
+            background: #e2e8f0;
+            color: #475569;
+            padding: 12px 24px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 600;
+            border-radius: 8px 8px 0 0;
+            margin-right: 5px;
+        }
+        
+        .tab-button.active {
+            background: white;
+            color: #be123c;
+            border-bottom: 3px solid #be123c;
+        }
+        
+        .tab-content {
+            display: none;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+
+        .sentence-type-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 25px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            margin-right: 10px;
+        }
+
+        .badge-causal {
+            background: #dbeafe;
+            color: #1e40af;
+            border: 2px solid #3b82f6;
+        }
+
+        .badge-progressive {
+            background: #dcfce7;
+            color: #15803d;
+            border: 2px solid #22c55e;
+        }
+
+        .badge-example {
+            background: #fae8ff;
+            color: #86198f;
+            border: 2px solid #c084fc;
+        }
+
+        .badge-purpose {
+            background: #fee2e2;
+            color: #991b1b;
+            border: 2px solid #f87171;
+        }
+
+        /* 音頻播放器樣式 */
+        .audio-player-container {
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 3px solid #f59e0b;
+            border-radius: 15px;
+            padding: 25px;
+            margin: 25px 0;
+        }
+
+        .audio-player {
+            width: 100%;
+            margin-top: 15px;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .audio-player::-webkit-media-controls-panel {
+            background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%);
+            border-radius: 10px;
+        }
+
+        .play-all-btn {
+            background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+            color: white;
+            padding: 12px 28px;
+            border-radius: 10px;
+            font-weight: 600;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+
+        .play-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.4);
+        }
+
+        .play-all-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        @media print {
+            body { background: white; }
+            .hero-section, footer, .btn-download, .no-print, .analyze-btn, .show-relation-btn, .audio-player-container { display: none; }
+        }
+    </style>
+<script src="https://puc.poecdn.net/authenticated_preview_page/syncedState.bd4eeeb8e8e02052ee92.js"></script>
+<!--[if gte mso 9]><xml>
+<mso:CustomDocumentProperties>
+<mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_Editor msdt:dt="string">KO LAP SING</mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_Editor>
+<mso:Order msdt:dt="string">1338400.00000000</mso:Order>
+<mso:_ExtendedDescription msdt:dt="string"></mso:_ExtendedDescription>
+<mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_Author msdt:dt="string">KO LAP SING</mso:display_urn_x003a_schemas-microsoft-com_x003a_office_x003a_office_x0023_Author>
+<mso:ComplianceAssetId msdt:dt="string"></mso:ComplianceAssetId>
+<mso:TriggerFlowInfo msdt:dt="string"></mso:TriggerFlowInfo>
+<mso:ContentTypeId msdt:dt="string">0x010100B331E5B508DBAC40BB787C017993A9FE</mso:ContentTypeId>
+<mso:_SourceUrl msdt:dt="string"></mso:_SourceUrl>
+<mso:_SharedFileIndex msdt:dt="string"></mso:_SharedFileIndex>
+</mso:CustomDocumentProperties>
+</xml><![endif]-->
+</head>
+<body>
+    <!-- Hero Section -->
+    <section class="hero-section py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">
+                <i class="fas fa-chalkboard-teacher mr-3"></i>互動式下午茶句式寫作教材
+            </h1>
+            <p class="text-xl md:text-2xl opacity-90">
+                麗思卡爾頓酒店「天際雲端」下午茶 - 教師版
+            </p>
+        </div>
+    </section>
+
+    <!-- Main Content -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Download Button -->
+            <div class="text-center mb-12 no-print">
+                <button onclick="window.print()" class="btn-download">
+                    <i class="fas fa-print mr-3"></i>列印教材
+                </button>
+            </div>
+
+            <!-- 使用說明 -->
+            <div class="content-card no-print">
+                <h2 class="section-title">
+                    <i class="fas fa-info-circle mr-3"></i>教師使用說明
+                </h2>
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                        <h3 class="font-bold text-lg mb-3 text-blue-900">
+                            <i class="fas fa-mouse-pointer mr-2"></i>互動功能
+                        </h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>✅ 點擊<strong>「分析資料用途」</strong>按鈕，查看該資料在答案中的應用</li>
+                            <li>✅ 點擊<strong>「查看關聯資料」</strong>按鈕，了解答案使用了哪些背景資料</li>
+                            <li>✅ 點擊<strong>「句式效果分析」</strong>按鈕，理解該句式達到的寫作效果</li>
+                            <li>✅ 使用<strong>「音頻播放器」</strong>聆聽參考答案的標準朗讀</li>
+                        </ul>
+                    </div>
+                    <div class="bg-amber-50 p-6 rounded-lg border-l-4 border-amber-500">
+                        <h3 class="font-bold text-lg mb-3 text-amber-900">
+                            <i class="fas fa-lightbulb mr-2"></i>教學建議
+                        </h3>
+                        <ul class="space-y-2 text-gray-700">
+                            <li>💡 先讓學生閱讀背景資料，了解情景設定</li>
+                            <li>💡 引導學生思考：哪些資料可用於不同句式？</li>
+                            <li>💡 學生完成作答後，再展示參考答案與分析</li>
+                            <li>💡 播放錄音讓學生聆聽標準答案的語氣和節奏</li>
+                            <li>💡 重點討論句式如何達成不同的寫作效果</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 四大句式參考表 -->
+            <div class="content-card">
+                <h2 class="section-title">
+                    <i class="fas fa-book-open mr-3"></i>四大句式參考表
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6 mb-6">
+                    <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                        <h3 class="font-bold text-lg mb-3 flex items-center text-blue-900">
+                            <span class="sentence-type-badge badge-causal">因果句式</span>
+                        </h3>
+                        <p class="mb-2"><strong>句式：</strong><span class="sentence-structure">因為…所以…</span></p>
+                        <p class="mb-2"><strong>功能：</strong>解釋主題</p>
+                        <p class="text-sm text-gray-700">建立<strong>因果關係</strong>，解釋「打造此主題」的原因，讓主題的誕生顯得理所當然。</p>
+                    </div>
+
+                    <div class="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                        <h3 class="font-bold text-lg mb-3 flex items-center text-green-900">
+                            <span class="sentence-type-badge badge-progressive">遞進句式</span>
+                        </h3>
+                        <p class="mb-2"><strong>句式：</strong><span class="sentence-structure">除了…更…</span></p>
+                        <p class="mb-2"><strong>功能：</strong>描述下午茶特色</p>
+                        <p class="text-sm text-gray-700">呈現<strong>遞進與多重優點</strong>，從基礎體驗提升到更深層次，使下午茶的價值更豐富多元。</p>
+                    </div>
+
+                    <div class="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
+                        <h3 class="font-bold text-lg mb-3 flex items-center text-purple-900">
+                            <span class="sentence-type-badge badge-example">舉例句式</span>
+                        </h3>
+                        <p class="mb-2"><strong>句式：</strong><span class="sentence-structure">舉例來說… / 例如…</span></p>
+                        <p class="mb-2"><strong>功能：</strong>舉例說明</p>
+                        <p class="text-sm text-gray-700">將<strong>抽象概念具體化</strong>，用具體例子支撐，讓顧客能實際想像出餐點的樣貌，增加說服力。</p>
+                    </div>
+
+                    <div class="bg-red-50 p-6 rounded-lg border-l-4 border-red-500">
+                        <h3 class="font-bold text-lg mb-3 flex items-center text-red-900">
+                            <span class="sentence-type-badge badge-purpose">目的句式</span>
+                        </h3>
+                        <p class="mb-2"><strong>句式：</strong><span class="sentence-structure">目的在於… 這讓…成為…</span></p>
+                        <p class="mb-2"><strong>功能：</strong>總結</p>
+                        <p class="text-sm text-gray-700">闡述<strong>設計意圖</strong>，解釋設計背後的動機，賦予體驗更高的意義，從餐飲昇華為文化體驗。</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab Navigation -->
+            <div class="content-card no-print">
+                <div class="flex flex-wrap gap-2 mb-6">
+                    <button class="tab-button active" onclick="switchTab('scenario')">
+                        <i class="fas fa-map-marked-alt mr-2"></i>情景背景資料
+                    </button>
+                    <button class="tab-button" onclick="switchTab('answer')">
+                        <i class="fas fa-check-circle mr-2"></i>參考答案與分析
+                    </button>
+                    <button class="tab-button" onclick="switchTab('compare')">
+                        <i class="fas fa-exchange-alt mr-2"></i>對照分析模式
+                    </button>
+                </div>
+            </div>
+
+            <!-- Tab 1: 情景背景資料 -->
+            <div id="scenario-tab" class="tab-content active">
+                <div class="content-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-hotel mr-3"></i>情景背景資料
+                    </h2>
+
+                    <!-- 酒店位置與特色 -->
+                    <h3 class="text-xl font-bold mb-4 text-blue-900">
+                        <i class="fas fa-map-marker-alt mr-2"></i>酒店位置與特色
+                    </h3>
+
+                    <div id="location-1" class="info-item" data-used-in="causal">
+                        <p><strong>麗思卡爾頓酒店位於ICC環球貿易廣場，樓高118層</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('location-1')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-location-1" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-causal">因果句式</span></strong>：建立「推出天際雲端主題」的原因基礎</p>
+                            <p>✅ 關鍵詞：<span class="sentence-structure">環球貿易廣場一百一十八層</span> → 強調高度優勢</p>
+                            <p>💡 寫作技巧：具體數字增強說服力，使用中文數字更正式</p>
+                        </div>
+                    </div>
+
+                    <div id="location-2" class="info-item" data-used-in="causal">
+                        <p><strong>是全球最高的麗思卡爾頓酒店，位處香港天際線之巔</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('location-2')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-location-2" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-causal">因果句式</span></strong>：強化「全球最高」的獨特性</p>
+                            <p>✅ 關鍵詞：<span class="sentence-structure">天際線之巔</span> → 呼應主題名稱「天際雲端」</p>
+                            <p>💡 寫作技巧：使用最高級（最高）建立唯一性</p>
+                        </div>
+                    </div>
+
+                    <div id="location-3" class="info-item" data-used-in="progressive">
+                        <p><strong>Café 103位於103樓，擁有360度全景落地玻璃窗</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('location-3')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-location-3" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-progressive">遞進句式</span></strong>：作為「更高層次體驗」的具體內容</p>
+                            <p>✅ 改寫為：<span class="sentence-structure">一百零三樓的咖啡廳</span> → 使用中文更典雅</p>
+                            <p>✅ 關鍵詞：<span class="sentence-structure">360度全景落地窗</span> → 視覺體驗的完整性</p>
+                            <p>💡 寫作技巧：數字化描述（360度）增加可信度</p>
+                        </div>
+                    </div>
+
+                    <div id="location-4" class="info-item" data-used-in="progressive">
+                        <p><strong>可俯瞰維港兩岸、九龍半島及香港島的壯麗景觀</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('location-4')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-location-4" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-progressive">遞進句式</span></strong>：具體說明「更」能獲得的視覺享受</p>
+                            <p>✅ 關鍵詞：<span class="sentence-structure">璀璨景致</span> → 將「壯麗」轉化為更具畫面感的詞彙</p>
+                            <p>💡 寫作技巧：列舉地點（維港兩岸、九龍半島）增加具體性</p>
+                        </div>
+                    </div>
+
+                    <div id="location-5" class="info-item" data-used-in="none">
+                        <p><strong>室內設計採用現代奢華風格，大量運用雲石與金屬元素</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('location-5')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-location-5" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>⚠️ 此資料在參考答案中<strong>未直接使用</strong></p>
+                            <p>💡 教學提示：可引導學生思考如何運用此資料</p>
+                            <p>🎯 可能用法：在<span class="sentence-type-badge badge-progressive">遞進句式</span>中補充環境氛圍描述</p>
+                            <p>📝 示範：「在現代奢華的空間中，透過全景窗...」</p>
+                        </div>
+                    </div>
+
+                    <!-- 下午茶內容 -->
+                    <h3 class="text-xl font-bold mb-4 mt-8 text-green-900">
+                        <i class="fas fa-birthday-cake mr-2"></i>下午茶內容
+                    </h3>
+
+                    <div id="tea-1" class="info-item" data-used-in="example,purpose">
+                        <p><strong>主題概念：「天際雲端」，以雲朵、天空、星辰為設計靈感</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('tea-1')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-tea-1" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-causal">因果句式</span></strong>：作為建議的主題名稱</p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-example">舉例句式</span></strong>：說明甜點設計呼應主題</p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-purpose">目的句式</span></strong>：「漫步雲端」的意境來源</p>
+                            <p>✅ 關鍵詞：<span class="sentence-structure">天際雲端</span> → 貫穿全文的主題核心</p>
+                            <p>💡 寫作技巧：主題概念要在多個句式中反覆呼應</p>
+                        </div>
+                    </div>
+
+                    <div id="tea-2" class="info-item" data-used-in="example">
+                        <p><strong>雲朵造型棉花糖配藍莓醬</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('tea-2')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-tea-2" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-example">舉例句式</span></strong>：第一個具體例子</p>
+                            <p>✅ 關鍵詞：<span class="sentence-structure">雲朵造型</span> → 與「天際雲端」主題呼應</p>
+                            <p>💡 寫作技巧：造型描述讓讀者產生視覺想像</p>
+                        </div>
+                    </div>
+
+                    <div id="tea-3" class="info-item" data-used-in="example">
+                        <p><strong>星空主題馬卡龍（藍色、銀色系）</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('tea-3')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-tea-3" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-example">舉例句式</span></strong>：第二個具體例子</p>
+                            <p>✅ 改寫為：<span class="sentence-structure">銀河系配色的星空馬卡龍</span></p>
+                            <p>💡 寫作技巧：將「藍色、銀色」提升為「銀河系配色」更有意境</p>
+                        </div>
+                    </div>
+
+                    <div id="tea-4" class="info-item" data-used-in="example">
+                        <p><strong>金箔裝飾的巧克力慕斯</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('tea-4')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-tea-4" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-example">舉例句式</span></strong>：第三個具體例子</p>
+                            <p>✅ 改寫為：<span class="sentence-structure">綴有金箔的巧克力慕斯</span></p>
+                            <p>💡 寫作技巧：「綴」比「裝飾」更精緻優雅</p>
+                        </div>
+                    </div>
+
+                    <div id="tea-5" class="info-item" data-used-in="none">
+                        <p><strong>香檳果凍配食用花瓣</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('tea-5')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-tea-5" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>⚠️ 此資料在參考答案中<strong>未使用</strong>（已有3個例子足夠）</p>
+                            <p>💡 教學提示：<span class="sentence-type-badge badge-example">舉例句式</span>選擇2-3個最具代表性的例子即可</p>
+                            <p>🎯 選擇標準：與主題關聯性最強的優先</p>
+                        </div>
+                    </div>
+
+                    <div id="tea-6" class="info-item" data-used-in="none">
+                        <p><strong>茶品選擇：精選來自喜馬拉雅山、大吉嶺等高海拔茶園的頂級茶葉</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('tea-6')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-tea-6" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>⚠️ 此資料在參考答案中<strong>未使用</strong></p>
+                            <p>💡 教學提示：可引導學生思考是否要加入茶品資訊</p>
+                            <p>🎯 可能用法：在<span class="sentence-type-badge badge-progressive">遞進句式</span>或<span class="sentence-type-badge badge-example">舉例句式</span>中補充</p>
+                            <p>📝 示範：「品嚐來自高海拔茶園的頂級茶品」</p>
+                        </div>
+                    </div>
+
+                    <div id="tea-7" class="info-item" data-used-in="none">
+                        <p><strong>特別服務：每位賓客獲贈一份「星空明信片」，可在103樓寄出</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('tea-7')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-tea-7" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>⚠️ 此資料在參考答案中<strong>未使用</strong></p>
+                            <p>💡 教學提示：特別服務可作為加分項補充</p>
+                            <p>🎯 可能用法：在<span class="sentence-type-badge badge-progressive">遞進句式</span>中作為「更」的內容之一</p>
+                            <p>📝 示範：「更獲贈星空明信片，留下雲端回憶」</p>
+                        </div>
+                    </div>
+
+                    <!-- 主題定位 -->
+                    <h3 class="text-xl font-bold mb-4 mt-8 text-purple-900">
+                        <i class="fas fa-bullseye mr-2"></i>主題定位
+                    </h3>
+
+                    <div id="theme-1" class="info-item" data-used-in="purpose">
+                        <p><strong>「天際雲端」主題：打造置身雲端的夢幻體驗，結合香港最高點的獨特優勢與精緻法式甜點工藝</strong></p>
+                        <button class="analyze-btn" onclick="showUsage('theme-1')">
+                            <i class="fas fa-search mr-1"></i>分析資料用途
+                        </button>
+                        <div id="usage-theme-1" class="annotation">
+                            <p><strong>📊 資料用途分析：</strong></p>
+                            <p>✅ 用於<strong><span class="sentence-type-badge badge-purpose">目的句式</span></strong>：總結設計目的</p>
+                            <p>✅ 改寫為：<span class="sentence-structure">將香港天際線的壯麗景觀與法式甜點工藝完美融合</span></p>
+                            <p>💡 寫作技巧：將「最高點優勢」昇華為「天際線景觀」更有詩意</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 2: 參考答案與分析 -->
+            <div id="answer-tab" class="tab-content">
+                <div class="content-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-check-double mr-3"></i>參考答案與互動分析
+                    </h2>
+
+                    <!-- 音頻播放器 -->
+                    <div class="audio-player-container">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-xl font-bold text-amber-900 flex items-center">
+                                <i class="fas fa-volume-up mr-3"></i>參考答案錄音
+                            </h3>
+                            <button id="playAllBtn" class="play-all-btn" onclick="togglePlayPause()">
+                                <i class="fas fa-play mr-2"></i>播放完整答案
+                            </button>
+                        </div>
+                        <p class="text-gray-700 mb-3">
+                            <i class="fas fa-info-circle mr-2"></i>
+                            點擊播放按鈕聆聽四句完整參考答案的標準朗讀，注意語氣、停頓和語速。
+                        </p>
+                        <audio id="mainAudio" class="audio-player" controls="">
+                            <source src="https://pfst.cf2.poecdn.net/base/audio/d35e85016ca1d45da5d0645de0b3496e93b4fc499b9837e42ad71ddd313da243" type="audio/mpeg">
+                            您的瀏覽器不支援音頻播放。
+                        </audio>
+                        <div class="mt-3 text-sm text-gray-600">
+                            <p><i class="fas fa-headphones mr-2"></i><strong>使用建議：</strong></p>
+                            <ul class="list-disc list-inside ml-6 mt-2 space-y-1">
+                                <li>先讓學生完成作答後再播放錄音</li>
+                                <li>可多次播放，讓學生模仿語調和節奏</li>
+                                <li>引導學生注意句式之間的自然銜接</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- 因果句式 -->
+                    <div class="answer-card">
+                        <h3 class="text-xl font-bold mb-4 text-blue-900 flex items-center">
+                            <span class="sentence-type-badge badge-causal">因果句式</span>
+                            （因為…所以… - 解釋主題）
+                        </h3>
+                        <div class="bg-white p-5 rounded-lg mb-4">
+                            <p class="text-lg leading-relaxed">
+                                <span class="sentence-structure">因為</span>麗思卡爾頓酒店位於環球貿易廣場一百一十八層，是香港最高的奢華酒店，擁有無與倫比的天際線視野，<span class="sentence-structure">所以</span>我建議以「天際雲端」作為下午茶主題。
+                            </p>
+                        </div>
+                        
+                        <button class="show-relation-btn" onclick="showRelations('answer1')">
+                            <i class="fas fa-link mr-2"></i>查看關聯資料
+                        </button>
+                        <button class="show-relation-btn" onclick="showEffect('effect1')">
+                            <i class="fas fa-magic mr-2"></i>句式效果分析
+                        </button>
+                        
+                        <div id="relation-answer1" class="annotation">
+                            <p class="font-bold mb-2">📌 使用的背景資料：</p>
+                            <ul class="list-disc list-inside space-y-2 ml-4">
+                                <li>✅ <strong>環球貿易廣場一百一十八層</strong>（酒店位置與特色 - 第1點）</li>
+                                <li>✅ <strong>香港最高的奢華酒店</strong>（酒店位置與特色 - 第2點）</li>
+                                <li>✅ <strong>天際線視野</strong>（酒店位置與特色 - 第2點改寫）</li>
+                                <li>✅ <strong>「天際雲端」主題名稱</strong>（主題概念）</li>
+                            </ul>
+                            <p class="mt-3 font-bold text-amber-900">💡 寫作技巧：</p>
+                            <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                                <li>「ICC」→「環球貿易廣場」：使用全名更正式</li>
+                                <li>「位處天際線之巔」→「擁有無與倫比的天際線視野」：從靜態位置描述轉化為動態視覺體驗</li>
+                                <li>「精心策劃」→「我建議以...作為」：以建議者的角度呈現，更符合實際應用情境</li>
+                            </ul>
+                        </div>
+                        
+                        <div id="effect-effect1" class="annotation">
+                            <p class="font-bold mb-3">🎯 <span class="sentence-type-badge badge-causal">因果句式</span>效果分析：</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="effect-badge">建立因果邏輯</span>
+                                    <p class="ml-2 mt-1">清楚說明「推出天際雲端主題」是基於酒店的高度優勢，讓主題推出顯得合理且必然</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">強化唯一性</span>
+                                    <p class="ml-2 mt-1">使用「一百一十八層」、「最高」、「無與倫比」等詞彙，強調酒店的獨特性，無可取代</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">呼應主題</span>
+                                    <p class="ml-2 mt-1">「天際線視野」與「天際雲端」主題名稱完美呼應，形成概念上的統一</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">建議者立場</span>
+                                    <p class="ml-2 mt-1">「我建議以...作為」展現專業建議的角度，更貼近實際工作情境</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 遞進句式 -->
+                    <div class="answer-card">
+                        <h3 class="text-xl font-bold mb-4 text-green-900 flex items-center">
+                            <span class="sentence-type-badge badge-progressive">遞進句式</span>
+                            （除了…更… - 下午茶特色）
+                        </h3>
+                        <div class="bg-white p-5 rounded-lg mb-4">
+                            <p class="text-lg leading-relaxed">
+                                在一百零三樓的咖啡廳，賓客<span class="sentence-structure">除了</span>能品嚐精緻的法式甜點，<span class="sentence-structure">更</span>能透過360度全景落地窗，將維港兩岸、九龍半島的璀璨景致盡收眼底，感受置身雲端的非凡體驗。
+                            </p>
+                        </div>
+                        
+                        <button class="show-relation-btn" onclick="showRelations('answer2')">
+                            <i class="fas fa-link mr-2"></i>查看關聯資料
+                        </button>
+                        <button class="show-relation-btn" onclick="showEffect('effect2')">
+                            <i class="fas fa-magic mr-2"></i>句式效果分析
+                        </button>
+                        
+                        <div id="relation-answer2" class="annotation">
+                            <p class="font-bold mb-2">📌 使用的背景資料：</p>
+                            <ul class="list-disc list-inside space-y-2 ml-4">
+                                <li>✅ <strong>Café 103位於103樓</strong>（酒店位置與特色 - 第3點）</li>
+                                <li>✅ <strong>360度全景落地玻璃窗</strong>（酒店位置與特色 - 第3點）</li>
+                                <li>✅ <strong>維港兩岸、九龍半島</strong>（酒店位置與特色 - 第4點）</li>
+                                <li>✅ <strong>法式甜點工藝</strong>（主題定位改寫）</li>
+                            </ul>
+                            <p class="mt-3 font-bold text-amber-900">💡 寫作技巧：</p>
+                            <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                                <li>「壯麗景觀」→「璀璨景致」：用詞更加華麗精緻，符合奢華酒店定位</li>
+                            </ul>
+                        </div>
+                        
+                        <div id="effect-effect2" class="annotation">
+                            <p class="font-bold mb-3">🎯 <span class="sentence-type-badge badge-progressive">遞進句式</span>效果分析：</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="effect-badge">層次遞進</span>
+                                    <p class="ml-2 mt-1">從基礎的「品嚐甜點」（味覺），提升至「欣賞景致」（視覺），再昇華至「置身雲端的體驗」（感受），三個層次逐步加深</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">多感官體驗</span>
+                                    <p class="ml-2 mt-1">結合味覺（法式甜點）和視覺（全景窗景），打造全方位的感官享受</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">空間感營造</span>
+                                    <p class="ml-2 mt-1">「360度」、「盡收眼底」營造出開闊的空間感，「置身雲端」呼應主題</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 舉例句式 -->
+                    <div class="answer-card">
+                        <h3 class="text-xl font-bold mb-4 text-purple-900 flex items-center">
+                            <span class="sentence-type-badge badge-example">舉例句式</span>
+                            （例如… - 舉例說明）
+                        </h3>
+                        <div class="bg-white p-5 rounded-lg mb-4">
+                            <p class="text-lg leading-relaxed">
+                                我們的甜點設計處處呼應「天際雲端」主題，<span class="sentence-structure">例如</span>雲朵造型的棉花糖配藍莓醬、銀河系配色的星空馬卡龍，以及綴有金箔的巧克力慕斯，每一款都如藝術品般精緻。
+                            </p>
+                        </div>
+                        
+                        <button class="show-relation-btn" onclick="showRelations('answer3')">
+                            <i class="fas fa-link mr-2"></i>查看關聯資料
+                        </button>
+                        <button class="show-relation-btn" onclick="showEffect('effect3')">
+                            <i class="fas fa-magic mr-2"></i>句式效果分析
+                        </button>
+                        
+                        <div id="relation-answer3" class="annotation">
+                            <p class="font-bold mb-2">📌 使用的背景資料：</p>
+                            <ul class="list-disc list-inside space-y-2 ml-4">
+                                <li>✅ <strong>天際雲端主題</strong>（下午茶內容 - 主題概念）</li>
+                                <li>✅ <strong>雲朵造型棉花糖配藍莓醬</strong>（下午茶內容 - 特色餐點1）</li>
+                                <li>✅ <strong>星空主題馬卡龍</strong>（下午茶內容 - 特色餐點2）改寫為「銀河系配色」</li>
+                                <li>✅ <strong>金箔裝飾的巧克力慕斯</strong>（下午茶內容 - 特色餐點3）改寫為「綴有金箔」</li>
+                            </ul>
+                            <p class="mt-3 font-bold text-amber-900">💡 寫作技巧：</p>
+                            <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                                <li>「藍色、銀色系」→「銀河系配色」：更具詩意和想像空間</li>
+                                <li>「裝飾」→「綴」：用詞更精緻優雅</li>
+                                <li>加入「如藝術品般精緻」作為總結，提升整體格調</li>
+                            </ul>
+                        </div>
+                        
+                        <div id="effect-effect3" class="annotation">
+                            <p class="font-bold mb-3">🎯 <span class="sentence-type-badge badge-example">舉例句式</span>效果分析：</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="effect-badge">具體化抽象概念</span>
+                                    <p class="ml-2 mt-1">將「呼應天際雲端主題」這個抽象說法，透過三個具體甜點例子變得可感知、可想像</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">主題一致性</span>
+                                    <p class="ml-2 mt-1">三個例子都與「天空」元素相關（雲朵、星空、金箔如陽光），緊扣主題不偏離</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">視覺畫面感</span>
+                                    <p class="ml-2 mt-1">「雲朵造型」、「銀河系配色」、「綴有金箔」都是視覺化描述，讓讀者腦海中浮現畫面</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">品質保證</span>
+                                    <p class="ml-2 mt-1">「如藝術品般精緻」昇華產品價值，從「食物」提升至「藝術品」層次</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 目的句式 -->
+                    <div class="answer-card">
+                        <h3 class="text-xl font-bold mb-4 text-red-900 flex items-center">
+                            <span class="sentence-type-badge badge-purpose">目的句式</span>
+                            （目的在於… 這讓…成為… - 總結）
+                        </h3>
+                        <div class="bg-white p-5 rounded-lg mb-4">
+                            <p class="text-lg leading-relaxed">
+                                我建議以「天際雲端」為下午茶的主題，<span class="sentence-structure">目的在於</span>將香港天際線的壯麗景觀與法式甜點工藝完美融合，<span class="sentence-structure">這讓</span>每一次品茗時光都<span class="sentence-structure">成為</span>一場漫步雲端的夢幻之旅，讓客人在品味美食中感受超脫塵囂的寧靜與奢華。
+                            </p>
+                        </div>
+                        
+                        <button class="show-relation-btn" onclick="showRelations('answer4')">
+                            <i class="fas fa-link mr-2"></i>查看關聯資料
+                        </button>
+                        <button class="show-relation-btn" onclick="showEffect('effect4')">
+                            <i class="fas fa-magic mr-2"></i>句式效果分析
+                        </button>
+                        
+                        <div id="relation-answer4" class="annotation">
+                            <p class="font-bold mb-2">📌 使用的背景資料：</p>
+                            <ul class="list-disc list-inside space-y-2 ml-4">
+                                <li>✅ <strong>「天際雲端」主題名稱</strong>（主題概念）</li>
+                                <li>✅ <strong>香港最高點</strong>（酒店位置特色）改寫為「香港天際線景觀」</li>
+                                <li>✅ <strong>法式甜點工藝</strong>（主題定位）</li>
+                                <li>✅ <strong>置身雲端的夢幻體驗</strong>（主題定位）改寫為「漫步雲端的夢幻之旅」</li>
+                            </ul>
+                            <p class="mt-3 font-bold text-amber-900">💡 寫作技巧：</p>
+                            <ul class="list-disc list-inside ml-4 mt-2 space-y-1">
+                                <li>開頭再次提及「我建議以...為主題」：與首句呼應，強化建議立場</li>
+                                <li>將「最高點優勢」轉化為「天際線景觀」，更具詩意</li>
+                                <li>「置身雲端」→「漫步雲端」：從靜態變動態，更有故事感</li>
+                                <li>「賓客」→「客人」：用詞更親切自然</li>
+                                <li>「在品味中」→「在品味美食中」：更具體明確</li>
+                                <li>加入「超脫塵囂的寧靜與奢華」，賦予情感價值</li>
+                            </ul>
+                        </div>
+                        
+                        <div id="effect-effect4" class="annotation">
+                            <p class="font-bold mb-3">🎯 <span class="sentence-type-badge badge-purpose">目的句式</span>效果分析：</p>
+                            <div class="space-y-3">
+                                <div>
+                                    <span class="effect-badge">闡述設計理念</span>
+                                    <p class="ml-2 mt-1">明確說明設計背後的思考：將「景觀」與「甜點工藝」融合，展現設計的用心</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">價值昇華</span>
+                                    <p class="ml-2 mt-1">從「吃下午茶」提升至「夢幻之旅」，從物質享受昇華至精神體驗</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">情感共鳴</span>
+                                    <p class="ml-2 mt-1">「超脫塵囂的寧靜與奢華」觸動現代人渴望逃離繁忙生活的心理需求</p>
+                                </div>
+                                <div>
+                                    <span class="effect-badge">首尾呼應</span>
+                                    <p class="ml-2 mt-1">「漫步雲端」呼應開頭的「天際雲端」主題，「我建議」再次強化建議者立場，形成完整的敘事閉環</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tab 3: 對照分析模式 -->
+            <div id="compare-tab" class="tab-content">
+                <div class="content-card">
+                    <h2 class="section-title">
+                        <i class="fas fa-columns mr-3"></i>資料與答案對照分析
+                    </h2>
+                    
+                    <div class="bg-blue-50 p-6 rounded-lg mb-6">
+                        <h3 class="font-bold text-lg mb-3 text-blue-900">
+                            <i class="fas fa-info-circle mr-2"></i>使用說明
+                        </h3>
+                        <p class="text-gray-700">此模式可讓您清楚看到每個句式如何運用背景資料。點擊下方按鈕查看不同句式的資料運用分析。</p>
+                    </div>
+
+                    <div class="flex flex-wrap gap-3 mb-6">
+                        <button class="show-relation-btn" onclick="highlightAll('causal')">
+                            <i class="fas fa-highlighter mr-2"></i><span class="sentence-type-badge badge-causal">因果句式</span>使用的資料
+                        </button>
+                        <button class="show-relation-btn" onclick="highlightAll('progressive')">
+                            <i class="fas fa-highlighter mr-2"></i><span class="sentence-type-badge badge-progressive">遞進句式</span>使用的資料
+                        </button>
+                        <button class="show-relation-btn" onclick="highlightAll('example')">
+                            <i class="fas fa-highlighter mr-2"></i><span class="sentence-type-badge badge-example">舉例句式</span>使用的資料
+                        </button>
+                        <button class="show-relation-btn" onclick="highlightAll('purpose')">
+                            <i class="fas fa-highlighter mr-2"></i><span class="sentence-type-badge badge-purpose">目的句式</span>使用的資料
+                        </button>
+                        <button class="show-relation-btn" style="background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);" onclick="clearHighlights()">
+                            <i class="fas fa-eraser mr-2"></i>清除標記
+                        </button>
+                    </div>
+
+                    <!-- 四大句式資料使用概覽 -->
+                    <div class="grid md:grid-cols-2 gap-6 mb-6">
+                        <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                            <h3 class="font-bold text-lg mb-4 flex items-center text-blue-900">
+                                <span class="sentence-type-badge badge-causal">因果句式</span>
+                                資料運用
+                            </h3>
+                            <ul class="space-y-2 text-sm">
+                                <li>✅ 環球貿易廣場一百一十八層</li>
+                                <li>✅ 全球最高的麗思卡爾頓</li>
+                                <li>✅ 天際線之巔（改寫為「天際線視野」）</li>
+                                <li>✅ 「天際雲端」主題名稱</li>
+                            </ul>
+                            <p class="mt-3 text-xs text-gray-600">
+                                <strong>功能：</strong>建立因果關係，說明推出主題的合理性
+                            </p>
+                        </div>
+
+                        <div class="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                            <h3 class="font-bold text-lg mb-4 flex items-center text-green-900">
+                                <span class="sentence-type-badge badge-progressive">遞進句式</span>
+                                資料運用
+                            </h3>
+                            <ul class="space-y-2 text-sm">
+                                <li>✅ 一百零三樓的咖啡廳</li>
+                                <li>✅ 360度全景落地窗</li>
+                                <li>✅ 維港兩岸、九龍半島景觀</li>
+                                <li>✅ 法式甜點工藝</li>
+                            </ul>
+                            <p class="mt-3 text-xs text-gray-600">
+                                <strong>功能：</strong>展現層次遞進，從基礎到更高體驗
+                            </p>
+                        </div>
+
+                        <div class="bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
+                            <h3 class="font-bold text-lg mb-4 flex items-center text-purple-900">
+                                <span class="sentence-type-badge badge-example">舉例句式</span>
+                                資料運用
+                            </h3>
+                            <ul class="space-y-2 text-sm">
+                                <li>✅ 天際雲端主題概念</li>
+                                <li>✅ 雲朵造型棉花糖配藍莓醬</li>
+                                <li>✅ 星空馬卡龍（改寫為「銀河系配色」）</li>
+                                <li>✅ 金箔巧克力慕斯（改寫為「綴有金箔」）</li>
+                            </ul>
+                            <p class="mt-3 text-xs text-gray-600">
+                                <strong>功能：</strong>具體化抽象概念，用實例支撐
+                            </p>
+                        </div>
+
+                        <div class="bg-red-50 p-6 rounded-lg border-l-4 border-red-500">
+                            <h3 class="font-bold text-lg mb-4 flex items-center text-red-900">
+                                <span class="sentence-type-badge badge-purpose">目的句式</span>
+                                資料運用
+                            </h3>
+                            <ul class="space-y-2 text-sm">
+                                <li>✅ 「天際雲端」主題名稱</li>
+                                <li>✅ 香港最高點（改寫為「天際線景觀」）</li>
+                                <li>✅ 法式甜點工藝</li>
+                                <li>✅ 置身雲端體驗（改寫為「漫步雲端之旅」）</li>
+                            </ul>
+                            <p class="mt-3 text-xs text-gray-600">
+                                <strong>功能：</strong>昇華意義，賦予情感價值
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 資料使用統計 -->
+                    <div class="grid md:grid-cols-2 gap-6">
+                        <div class="bg-green-50 p-6 rounded-lg border-l-4 border-green-500">
+                            <h3 class="font-bold text-lg mb-4 text-green-900">
+                                <i class="fas fa-check-circle mr-2"></i>已使用的資料（7項）
+                            </h3>
+                            <ul class="space-y-2 text-sm">
+                                <li>✅ 環球貿易廣場一百一十八層 <span class="sentence-type-badge badge-causal" style="font-size: 0.7rem; padding: 2px 8px;">因果</span></li>
+                                <li>✅ 全球最高的麗思卡爾頓 <span class="sentence-type-badge badge-causal" style="font-size: 0.7rem; padding: 2px 8px;">因果</span></li>
+                                <li>✅ 一百零三樓的咖啡廳 / 360度全景窗 <span class="sentence-type-badge badge-progressive" style="font-size: 0.7rem; padding: 2px 8px;">遞進</span></li>
+                                <li>✅ 維港兩岸、九龍半島景觀 <span class="sentence-type-badge badge-progressive" style="font-size: 0.7rem; padding: 2px 8px;">遞進</span></li>
+                                <li>✅ 天際雲端主題概念 <span class="sentence-type-badge badge-causal" style="font-size: 0.7rem; padding: 2px 8px;">因果</span> <span class="sentence-type-badge badge-example" style="font-size: 0.7rem; padding: 2px 8px;">舉例</span> <span class="sentence-type-badge badge-purpose" style="font-size: 0.7rem; padding: 2px 8px;">目的</span></li>
+                                <li>✅ 三款特色甜點（棉花糖、馬卡龍、慕斯）<span class="sentence-type-badge badge-example" style="font-size: 0.7rem; padding: 2px 8px;">舉例</span></li>
+                                <li>✅ 法式甜點工藝 <span class="sentence-type-badge badge-progressive" style="font-size: 0.7rem; padding: 2px 8px;">遞進</span> <span class="sentence-type-badge badge-purpose" style="font-size: 0.7rem; padding: 2px 8px;">目的</span></li>
+                            </ul>
+                        </div>
+                        
+                        <div class="bg-amber-50 p-6 rounded-lg border-l-4 border-amber-500">
+                            <h3 class="font-bold text-lg mb-4 text-amber-900">
+                                <i class="fas fa-exclamation-triangle mr-2"></i>未使用的資料（4項）
+                            </h3>
+                            <ul class="space-y-2 text-sm">
+                                <li>⚠️ 現代奢華風格、雲石與金屬元素</li>
+                                <li>⚠️ 香檳果凍配食用花瓣</li>
+                                <li>⚠️ 高海拔茶園的頂級茶葉</li>
+                                <li>⚠️ 星空明信片特別服務</li>
+                            </ul>
+                            <p class="mt-4 text-sm text-gray-600">
+                                💡 <strong>教學提示：</strong>這些資料並非不好，而是在四句式的篇幅限制下，需選擇最能支撐主題的核心資料。可引導學生思考如何取捨。
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- 資料轉化技巧 -->
+                    <div class="mt-6 bg-purple-50 p-6 rounded-lg border-l-4 border-purple-500">
+                        <h3 class="font-bold text-lg mb-4 text-purple-900">
+                            <i class="fas fa-magic mr-2"></i>資料轉化技巧一覽表
+                        </h3>
+                        <div class="overflow-x-auto">
+                        <table class="w-full bg-white rounded-lg overflow-hidden">
+                            <thead class="bg-purple-600 text-white">
+                                <tr>
+                                    <th class="p-3 text-left" style="width: 15%;">句式類型</th>
+                                    <th class="p-3 text-left" style="width: 30%;">原始資料</th>
+                                    <th class="p-3 text-left" style="width: 30%;">轉化後</th>
+                                    <th class="p-3 text-left" style="width: 25%;">技巧說明</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr class="border-b">
+                                    <td class="p-3"><span class="sentence-type-badge badge-causal" style="font-size: 0.75rem; padding: 4px 10px;">因果</span></td>
+                                    <td class="p-3">ICC / 118層</td>
+                                    <td class="p-3">環球貿易廣場一百一十八層</td>
+                                    <td class="p-3">全名+中文數字更正式典雅</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3"><span class="sentence-type-badge badge-causal" style="font-size: 0.75rem; padding: 4px 10px;">因果</span></td>
+                                    <td class="p-3">位處香港天際線之巔</td>
+                                    <td class="p-3">擁有無與倫比的天際線視野</td>
+                                    <td class="p-3">從靜態描述→視覺體驗</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3"><span class="sentence-type-badge badge-progressive" style="font-size: 0.75rem; padding: 4px 10px;">遞進</span></td>
+                                    <td class="p-3">Café 103 / 103樓</td>
+                                    <td class="p-3">一百零三樓的咖啡廳</td>
+                                    <td class="p-3">中文化+數字轉換</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3"><span class="sentence-type-badge badge-progressive" style="font-size: 0.75rem; padding: 4px 10px;">遞進</span></td>
+                                    <td class="p-3">壯麗景觀</td>
+                                    <td class="p-3">璀璨景致</td>
+                                    <td class="p-3">用詞更華麗精緻</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3"><span class="sentence-type-badge badge-example" style="font-size: 0.75rem; padding: 4px 10px;">舉例</span></td>
+                                    <td class="p-3">藍色、銀色系</td>
+                                    <td class="p-3">銀河系配色</td>
+                                    <td class="p-3">具象→意境</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3"><span class="sentence-type-badge badge-example" style="font-size: 0.75rem; padding: 4px 10px;">舉例</span></td>
+                                    <td class="p-3">金箔裝飾</td>
+                                    <td class="p-3">綴有金箔</td>
+                                    <td class="p-3">動詞選擇更優雅</td>
+                                </tr>
+                                <tr class="border-b">
+                                    <td class="p-3"><span class="sentence-type-badge badge-purpose" style="font-size: 0.75rem; padding: 4px 10px;">目的</span></td>
+                                    <td class="p-3">置身雲端的夢幻體驗</td>
+                                    <td class="p-3">漫步雲端的夢幻之旅</td>
+                                    <td class="p-3">靜態→動態，增加故事感</td>
+                                </tr>
+                                <tr>
+                                    <td class="p-3"><span class="sentence-type-badge badge-purpose" style="font-size: 0.75rem; padding: 4px 10px;">目的</span></td>
+                                    <td class="p-3">賓客</td>
+                                    <td class="p-3">客人</td>
+                                    <td class="p-3">用詞更親切自然</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 評分標準 -->
+            <div class="content-card">
+                <h2 class="section-title">
+                    <i class="fas fa-clipboard-check mr-3"></i>評分標準與教學重點
+                </h2>
+                
+                <div class="grid md:grid-cols-2 gap-6">
+                    <div class="bg-blue-50 p-6 rounded-lg border-l-4 border-blue-500">
+                        <h3 class="font-bold text-lg mb-4 text-blue-900">
+                            <i class="fas fa-star mr-2"></i>評分標準（100分）
+                        </h3>
+                        <ul class="space-y-3">
+                            <li><strong>✅ 句式運用正確（25分）</strong>
+                                <ul class="ml-6 mt-2 space-y-1 text-sm">
+                                    <li>• 四個句式都正確使用關鍵詞</li>
+                                    <li>• 語意通順，邏輯清晰</li>
+                                </ul>
+                            </li>
+                            <li><strong>✅ 內容切合情景（25分）</strong>
+                                <ul class="ml-6 mt-2 space-y-1 text-sm">
+                                    <li>• 準確運用背景資料</li>
+                                    <li>• 緊扣「天際雲端」主題</li>
+                                </ul>
+                            </li>
+                            <li><strong>✅ 邏輯連貫性（25分）</strong>
+                                <ul class="ml-6 mt-2 space-y-1 text-sm">
+                                    <li>• 四句形成完整故事</li>
+                                    <li>• 有清晰的起承轉合</li>
+                                </ul>
+                            </li>
+                            <li><strong>✅ 語言表達（25分）</strong>
+                                <ul class="ml-6 mt-2 space-y-1 text-sm">
+                                    <li>• 用詞精準、優雅</li>
+                                    <li>• 具畫面感和吸引力</li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </div>
+                    
+                    <div class="bg-amber-50 p-6 rounded-lg border-l-4 border-amber-500">
+                        <h3 class="font-bold text-lg mb-4 text-amber-900">
+                            <i class="fas fa-chalkboard-teacher mr-2"></i>四大句式教學重點
+                        </h3>
+                        <ul class="space-y-3">
+                            <li><span class="sentence-type-badge badge-causal" style="font-size: 0.85rem;">因果句式</span>
+                                <p class="text-sm mt-1">凸顯酒店獨特優勢，建立推出主題的合理性。建議者立場：「我建議以...作為」</p>
+                            </li>
+                            <li><span class="sentence-type-badge badge-progressive" style="font-size: 0.85rem;">遞進句式</span>
+                                <p class="text-sm mt-1">展現多層次體驗，從基礎到更高價值。中文數字更典雅：「一百零三樓」</p>
+                            </li>
+                            <li><span class="sentence-type-badge badge-example" style="font-size: 0.85rem;">舉例句式</span>
+                                <p class="text-sm mt-1">用具體例子支撐，選擇最能呼應主題的餐點。詞語精緻化：「綴」、「銀河系配色」</p>
+                            </li>
+                            <li><span class="sentence-type-badge badge-purpose" style="font-size: 0.85rem;">目的句式</span>
+                                <p class="text-sm mt-1">昇華體驗意義，賦予情感和文化價值。首尾呼應：再次提及「我建議」</p>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-800 text-white py-12 mt-16 no-print">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-gray-300">
+                <i class="fas fa-graduation-cap mr-2"></i>
+                互動式下午茶句式寫作教材 © 2024 | 教師專用版
+            </p>
+        </div>
+    </footer>
+
+    <script>
+        // 音頻播放控制
+        const mainAudio = document.getElementById('mainAudio');
+        const playAllBtn = document.getElementById('playAllBtn');
+
+        function togglePlayPause() {
+            if (mainAudio.paused) {
+                mainAudio.play();
+                playAllBtn.innerHTML = '<i class="fas fa-pause mr-2"></i>暫停播放';
+            } else {
+                mainAudio.pause();
+                playAllBtn.innerHTML = '<i class="fas fa-play mr-2"></i>播放完整答案';
+            }
+        }
+
+        // 監聽音頻播放結束
+        mainAudio.addEventListener('ended', function() {
+            playAllBtn.innerHTML = '<i class="fas fa-play mr-2"></i>播放完整答案';
+        });
+
+        // 監聽音頻播放狀態
+        mainAudio.addEventListener('play', function() {
+            playAllBtn.innerHTML = '<i class="fas fa-pause mr-2"></i>暫停播放';
+        });
+
+        mainAudio.addEventListener('pause', function() {
+            if (!mainAudio.ended) {
+                playAllBtn.innerHTML = '<i class="fas fa-play mr-2"></i>繼續播放';
+            }
+        });
+
+        // Tab切換功能
+        function switchTab(tabName) {
+            // 隱藏所有tab內容
+            document.querySelectorAll('.tab-content').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            
+            // 移除所有按鈕的active狀態
+            document.querySelectorAll('.tab-button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            // 顯示選中的tab
+            document.getElementById(tabName + '-tab').classList.add('active');
+            
+            // 設置對應按鈕為active
+            event.target.classList.add('active');
+        }
+
+        // 顯示資料用途
+        function showUsage(itemId) {
+            const usageDiv = document.getElementById('usage-' + itemId);
+            if (usageDiv.classList.contains('show')) {
+                usageDiv.classList.remove('show');
+            } else {
+                usageDiv.classList.add('show');
+            }
+        }
+
+        // 顯示答案的關聯資料
+        function showRelations(answerId) {
+            const relationDiv = document.getElementById('relation-' + answerId);
+            if (relationDiv.classList.contains('show')) {
+                relationDiv.classList.remove('show');
+            } else {
+                relationDiv.classList.add('show');
+            }
+        }
+
+        // 顯示句式效果
+        function showEffect(effectId) {
+            const effectDiv = document.getElementById('effect-' + effectId);
+            if (effectDiv.classList.contains('show')) {
+                effectDiv.classList.remove('show');
+            } else {
+                effectDiv.classList.add('show');
+            }
+        }
+
+        // 高亮顯示特定句式使用的所有資料
+        function highlightAll(sentenceType) {
+            // 先清除所有高亮
+            clearHighlights();
+            
+            // 高亮顯示相關的資料項目
+            document.querySelectorAll('.info-item').forEach(item => {
+                if (item.dataset.usedIn && item.dataset.usedIn.includes(sentenceType)) {
+                    item.classList.add('highlighted');
+                    item.classList.add('connected');
+                    
+                    // 移除動畫效果
+                    setTimeout(() => {
+                        item.classList.remove('connected');
+                    }, 1000);
+                }
+            });
+        }
+
+        // 清除所有高亮
+        function clearHighlights() {
+            document.querySelectorAll('.info-item').forEach(item => {
+                item.classList.remove('highlighted');
+            });
+        }
+    </script>
+
+
+</body></html>
